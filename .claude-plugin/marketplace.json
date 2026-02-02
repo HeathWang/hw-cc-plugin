@@ -1,0 +1,20 @@
+{
+  "name": "hw-cc-plugin",
+  "description": "Development marketplace for hw-cc-plugin core skills library",
+  "owner": {
+    "name": "HeathWang",
+    "email": "yishu.jay@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "hw-cc-plugin",
+      "description": "Daily development skills and commands, primarily for frontend development, iOS, H5, and more",
+      "version": "1.0.0",
+      "source": "./",
+      "author": {
+        "name": "HeathWang",
+        "email": "yishu.jay@gmail.com"
+      }
+    }
+  ]
+}

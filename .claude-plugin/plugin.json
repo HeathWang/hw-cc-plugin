@@ -1,0 +1,13 @@
+{
+  "name": "hw-cc-plugin",
+  "description": "Daily development skills and commands, primarily for frontend development, iOS, H5, and more",
+  "version": "1.0.0",
+  "author": {
+    "name": "HeathWang",
+    "email": "yishu.jay@gmail.com"
+  },
+  "homepage": "https://github.com/HeathWang/hw-cc-plugin",
+  "repository": "https://github.com/HeathWang/hw-cc-plugin",
+  "license": "MIT",
+  "keywords": ["skills", "collaboration", "best-practices", "workflows", "coding", "development", "iOS"]
+}
