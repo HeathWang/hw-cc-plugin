@@ -66,6 +66,21 @@ git commit -m "<generated_commit_message>"
 
 ---
 
+### Step 4: Loop Check & Continue
+After executing the commit, **loop back to Step 1** to check if there are still files waiting to be committed:
+```bash
+git status
+```
+
+**Decision Logic:**
+- If `git status` shows **no staged or unstaged changes**, the workflow is complete 🎉
+- If `git status` shows **remaining changes** (staged or unstaged), repeat from **Step 2** to group and commit the next set of related files
+- Continue this loop until all changes are committed
+
+**⚠️ IMPORTANT: Each iteration should handle a logically related group of files. Do not commit unrelated files together.**
+
+---
+
 ## Execution Rules
 
 ### Decision Flow
@@ -79,6 +94,14 @@ Check if files staged?
 Review staged          → Analyze changes → Group related files → git add → Review staged
     ↓                              ↓
 Generate & Execute Commit    ← ← ← ← ← ← ← ← ← ← ← ← ← ← ←
+    ↓
+git status (Loop back)
+    ↓
+Any remaining changes? 
+    ↓                              ↓
+   YES                            NO (Done 🎉)
+    ↓                              ↓
+Repeat from Step 2              Workflow Complete
 ```
 
 ### Key Principles
@@ -87,24 +110,28 @@ Generate & Execute Commit    ← ← ← ← ← ← ← ← ← ← ← ← ←
 - **No Intermediate Review**: Commit message is generated and executed in the same step
 - **Smart Grouping**: Stage related files together; leave unrelated changes for separate commits
 - **Output Verification**: Confirm each command's output before proceeding
+- **Continuous Loop**: Automatically repeat the workflow until all changes are committed
+- **One Logical Unit Per Commit**: Each commit should represent a single, cohesive change or feature
 
 ### Example Scenario
 
 ```bash
-# Step 1: Check status
-$ git status
-# Modified: User/Model/User.swift
-# Modified: User/View/UserCell.swift
-# Modified: User/ViewModel/UserVM.swift
-# Modified: Market/View/MarketCell.swift  # ← Unrelated change
-# No files staged
-
-# Step 2: Stage related User module files only
+# 初始状态：4个未提交文件，分为2个功能模块
 $ git add User/Model/User.swift User/View/UserCell.swift User/ViewModel/UserVM.swift
+$ git commit -m "feat(user): 重构用户数据模型和视图 (3个文件)
+1. 更新 User 数据模型以支持新字段
+2. 优化 UserCell 视图展示逻辑
+3. 重构 UserVM 以适配新的数据结构
 
-# Step 3: Review and commit
-$ git diff --cached  # Review only User module changes
-$ git commit -m "feat(user): 重构用户数据模型和视图 (3个文件) ..."
+🎨✨🚀"
 
-# For the remaining MarketCell.swift change, create a separate commit
+# 循环检测：剩余1个未提交文件（Market模块）
+$ git add Market/View/MarketCell.swift
+$ git commit -m "fix(market): 修复 MarketCell 显示问题 (1个文件)
+1. 修正商品价格显示格式
+2. 优化图片加载逻辑
+
+🐛🔧✅"
+
+# 循环检测：工作区干净，所有变更已提交 🎉
 ```
