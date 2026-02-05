@@ -1,11 +1,11 @@
 ---
 name: ios-i18n-workflow
-description: Use when iOS apps use SwiftGen L10n code generation and need to add localization keys, verify translation completeness, or sync localization files after code changes. Triggered by "missing L10n references", "incomplete translations across languages", or SwiftGen compilation errors from outdated Localizable.strings files.
+description: Use when iOS apps use SwiftGen L10n code generation and need to add localization keys, verify translation completeness, or sync localization files. Triggered by missing L10n references, incomplete translations, or SwiftGen compilation errors.
 ---
 
 # iOS Internationalization Workflow
 
-Complete workflow for managing iOS app internationalization (i18n) using SwiftGen. Handles baseline localization, translation verification across multiple languages, and automatic code generation.
+Complete workflow for managing iOS app internationalization (i18n) using SwiftGen. Handles baseline localization, translation verification, and code generation.
 
 ## When to Use
 
@@ -22,17 +22,15 @@ digraph when_to_use {
 }
 ```
 
-**Use this skill when:**
+**Use when:**
 - iOS apps using SwiftGen for code-generated L10n references
-- Adding new localization keys to baseline language
-- Verifying translation completeness across multiple languages
+- Adding new localization keys or verifying translation completeness
 - Syncing localization files after code changes
 - Replacing hardcoded strings with L10n.xxx calls
 
 **Do NOT use when:**
 - Projects using raw NSLocalizedString without SwiftGen
 - Non-iOS platforms (Android, Web)
-- Simple string replacements without localization structure
 
 ## Red Flags - STOP and Re-read
 
@@ -46,8 +44,7 @@ digraph when_to_use {
 
 ## Configuration
 
-**Project-specific variables to configure:**
-
+**Project-specific variables:**
 ```yaml
 project_root: "/path/to/your/iOS/project"
 localization_dir: "Resources/Localization"
@@ -110,115 +107,54 @@ swiftgen
 
 | Task | Command/Approach | Phase |
 |------|------------------|-------|
-| Check missing translations | `python3 check_missing_localizations.py baseline target` | 2-3 |
-| Clean unused entries | `python3 clean_unused_localizations.py --dry-run` | Any |
+| Check missing translations | `python3 scripts/check_missing_localizations.py <baseline> <target>` | 2-3 |
+| Clean unused entries | `python3 scripts/clean_unused_localizations.py --dry-run` | Any |
 | Generate Swift code | `swiftgen` | 4 |
 | Key naming rule | Letters/numbers/dots, start with letter | 1 |
 | Format string → Function | `L10n.Xxx.func(arg1, arg2)` | 1 |
-| Snake_case in key → camelCase in L10n | `futuresrecords.header.amount_usdt` → `L10n.Futuresrecords.Header.amountUsdt` | 1 |
 
 ## Common Mistakes
 
-| Mistake | Why It Happens | Fix |
-|---------|----------------|-----|
-| Running swiftgen before syncing translations | Excitement to see changes immediately | Always complete all 4 phases in order |
-| Using string interpolation on format functions | Thinking L10n.xxx.format is a string | Call it as a function: `L10n.Xxx.func(arg1, arg2)` |
-| Translating placeholders like %@ | Wanting to "localize" everything | Preserve placeholders exactly: `%@`, `%d`, etc. |
-| Naming keys starting with numbers | Thinking it's like variable names | Keys must start with letters: `secure3d` not `3dsecure` |
-| Skipping phase 4 for "later" | Assuming code will compile | SwiftGen MUST run after all changes or code won't compile |
-| Using old L10n reference after renaming key | Forgetting to update code | Always search and update all L10n references when keys change |
+| Mistake | Fix |
+|---------|-----|
+| Running swiftgen before syncing translations | Always complete all 4 phases in order |
+| Using string interpolation on format functions | Call as function: `L10n.Xxx.func(arg1, arg2)` |
+| Translating placeholders like %@ | Preserve placeholders exactly: `%@`, `%d`, etc. |
+| Naming keys starting with numbers | Keys must start with letters: `secure3d` not `3dsecure` |
+| Skipping phase 4 for "later" | SwiftGen MUST run after all changes or code won't compile |
 
-## Key Naming Convention
+## Key Rules
 
-**Rules:**
-- 3-level hierarchy max with domain-like naming
-- Lowercase letters, numbers (after first char), dots
-- **Each segment MUST start with a letter, NOT a number**
+**Quick summary:**
+- Keys: 3-level hierarchy, lowercase, MUST start with letters (not numbers)
+- L10n refs: Title Case for all levels, last level snake_case → camelCase
+- Format strings: Generate FUNCTIONS, not properties
 
-✅ `common.ok` | `market.header.name` | `trade.confirm.title`
-❌ `3dsecure.confirm` | `symboldetail.24h.high` | `2fa.enabled`
+**Examples:**
+✅ `common.ok` → `L10n.Common.ok`
+✅ `market.header.name` → `L10n.Market.Header.name`
+✅ `futuresrecords.header.amount_usdt` → `L10n.Futuresrecords.Header.amountUsdt`
+❌ `3dsecure.confirm` (starts with number) → Use `secure3d.confirm`
 
-**Fix:** Spell out numbers - `secure3d.confirm` → `threedsecure.confirm`
-
-## L10n Code Reference Rules
-
-| Key | L10n Reference | Transformation |
-|-----|----------------|----------------|
-| `common.ok` | `L10n.Common.ok` | Title Case |
-| `market.header.name` | `L10n.Market.Header.name` | Multi-level Title Case |
-| `futuresrecords.header.amount_usdt` | `L10n.Futuresrecords.Header.amountUsdt` | **snake_case → camelCase** |
-
-**Rules:** All levels Title Case except last level converts snake_case to camelCase.
-
-## Format Strings
-
-When strings contain format specifiers (`%@`, `%d`, `%%`), SwiftGen generates a **FUNCTION**, not a static property.
-
-**Example:**
-```
-"challenge.progress.stage" = "第%@阶段: %@";
-```
-
-**SwiftGen generates:**
-```swift
-public static func stage(_ p1: Any, _ p2: Any) -> String { ... }
-```
-
-**✅ Correct:** `L10n.Challenge.Progress.stage(phaseText, statusText)`
-**❌ Wrong:** `String(format: L10n.Challenge.Progress.stage, ...)` - it's already a function!
-
-**Format specifiers:**
-- `%@` - Any object
-- `%d`/`%i` - Integer
-- `%f`/`%.2f` - Float/Double
-- `%%` - Literal percent (no parameter created)
+**For detailed rules, examples, and troubleshooting:** See [references/naming-conventions.md](references/naming-conventions.md)
 
 ## Helper Scripts
 
-Located in `scripts/` directory. For detailed usage and troubleshooting, see [scripts/README.md](scripts/README.md).
+Located in `scripts/` directory. For detailed usage, see [scripts/README.md](scripts/README.md).
 
-**Quick reference:**
-
-| Script | Purpose | Quick Command |
-|--------|---------|---------------|
+| Script | Purpose | Command |
+|--------|---------|---------|
 | `check_missing_localizations.py` | Compare files for missing keys | `python3 scripts/check_missing_localizations.py <baseline> <target>` |
 | `clean_unused_localizations.py` | Find/remove unused entries | `python3 scripts/clean_unused_localizations.py --dry-run` |
 
-**Installation:**
-```bash
-# Copy to project for convenience
-cp /path/to/ios-i18n-workflow/scripts/*.py <project_root>/
-```
-
-## Translation Guidelines
-
-**Core principles:**
-- Preserve all placeholders (`%@`, `%d`, `%lld`) exactly
-- Consider UI context (button labels should be brief)
-- Maintain consistency with existing translations
-
-For detailed language-specific guidelines and best practices, see [references/translation-guidelines.md](references/translation-guidelines.md).
-
 ## Important Constraints
 
-**For ALL phases**:
+**For ALL phases:**
 - Only add/modify missing or outdated keys identified by scripts or requirements
-- Do NOT edit or change existing, correct keys and values
+- Do NOT edit existing, correct keys and values
 - Preserve file structure, MARK comments, and formatting
-- Maintain alphabetical or logical grouping within sections
+- Maintain alphabetical or logical grouping
 - Only modify the specific language file for that phase
-
-## Error Handling
-
-**SwiftGen errors after replacing strings**: Disregard. Phase 4 will resolve them.
-
-**Script execution failures**:
-- Verify file paths (use `--localizable-file` parameter if auto-detection fails)
-- Ensure Python 3: `python3 --version`
-- Check permissions: `chmod +x script_name.py`
-- For `clean_unused_localizations.py`: Run from project root or specify `--project-root`
-
-For detailed troubleshooting, see [scripts/README.md](scripts/README.md).
 
 ## Best Practices
 
@@ -227,8 +163,6 @@ For detailed troubleshooting, see [scripts/README.md](scripts/README.md).
 3. Run `swiftgen` after ALL changes (critical)
 4. Test translations in app
 5. Clean unused entries periodically
-6. Preserve placeholders (`%@`, `%d`) exactly
-7. Follow naming conventions (start with letters)
 
 ## Requirements
 
@@ -239,5 +173,4 @@ For detailed troubleshooting, see [scripts/README.md](scripts/README.md).
 
 ## Advanced Usage
 
-For CI/CD integration, batch processing, automated translation, and performance optimization, see [references/advanced-usage.md](references/advanced-usage.md).
-
+For CI/CD integration, automated translation, and performance optimization, see [references/advanced-usage.md](references/advanced-usage.md).
