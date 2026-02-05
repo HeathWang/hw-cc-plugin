@@ -1,11 +1,11 @@
 ---
 name: ios-i18n-workflow
-description: Use when iOS apps using SwiftGen L10n need localization work - adding keys, checking missing translations, or cleaning unused entries. Triggered by hardcoded strings, missing L10n references, incomplete translations, or unused localization cleanup requests.
+description: Use when iOS apps using SwiftGen L10n need localization work - adding keys, checking missing translations, or cleaning unused entries. Triggered by hardcoded strings, missing L10n references, incomplete translations across multiple languages, or unused localization cleanup requests.
 ---
 
 # iOS Internationalization Workflow
 
-Complete workflow for managing iOS app internationalization (i18n) using SwiftGen L10n code generation. Covers three main scenarios: internationalizing code, verifying translation completeness, and cleaning unused entries.
+Complete workflow for managing iOS app internationalization (i18n) using SwiftGen L10n code generation. Supports any number of target languages. Covers three main scenarios: internationalizing code, verifying translation completeness, and cleaning unused entries.
 
 ## When to Use
 
@@ -28,13 +28,15 @@ digraph when_to_use {
 **Three main scenarios:**
 
 1. **Internationalize code** - User provides code or folder: "Here's my view controller, add i18n"
-   → Run full 4-phase workflow (baseline → targets → verify → SwiftGen)
+   → Run full workflow (baseline → ALL target languages → verify → SwiftGen)
 
 2. **Check missing translations** - User explicitly asks: "Check if translations are complete" or "Find missing i18n keys"
-   → Run check_missing_localizations.py and fill gaps
+   → Run check_missing_localizations.py for each target language and fill gaps
 
 3. **Clean unused entries** - User explicitly asks: "Clean unused localizations" or "Remove unused i18n keys"
    → Run clean_unused_localizations.py with dry-run first
+
+**Key principle:** Complete translations for ALL target languages before verification and SwiftGen generation.
 
 **Do NOT use when:**
 - Projects using raw NSLocalizedString without SwiftGen
@@ -72,6 +74,7 @@ User requests removal of unused entries with phrases like "clean unused localiza
 - "I can just eyeball the files"
 - "Checking one target language is enough"
 - "I'll add keys later"
+- "The other languages look fine"
 
 **For Scenario 3 (Cleanup):**
 - "Just delete everything without checking"
@@ -85,38 +88,36 @@ User requests removal of unused entries with phrases like "clean unused localiza
 ```yaml
 project_root: "/path/to/your/iOS/project"
 localization_dir: "*/Localization"
-baseline_language: "zh-Hans"  # Source of truth
-target_languages: ["zh-Hant", "en"]
+baseline_language: "zh-Hans"  # Source of truth (can be any language)
+target_languages: ["zh-Hant", "en", "ja", "ko", "de"]  # ALL target languages
 generated_file: "Generated/Strings.swift"
 ```
 
 **Default structure:**
 ```
 <ProjectRoot>/path/<localization_dir>/
-├── zh-Hans.lproj/Localizable.strings  # Baseline
-├── zh-Hant.lproj/Localizable.strings
-└── en.lproj/Localizable.strings
+├── zh-Hans.lproj/Localizable.strings  # Baseline (source of truth)
+├── zh-Hant.lproj/Localizable.strings  # Target 1
+├── en.lproj/Localizable.strings       # Target 2
+└── ja.lproj/Localizable.strings       # Target 3 (add more as needed)
 ```
+
+**Note:** The baseline language can be any language (zh-Hans, en, ja, etc.). Choose the language you work with most frequently as baseline.
 
 ## Scenario 1: Full Internationalization Workflow
 
 **Use when:** User provides code/folder for internationalization
 
-**Flow:** 4 sequential phases
+**Flow:** Sequential phases with iterative target language processing
 
 ```
-Phase 1: Baseline (Update zh-Hans)
-    ↓
-Phase 2: Target Language 1 (e.g., zh-Hant)
-    ↓
-Phase 3: Target Language 2 (e.g., en)
-    ↓
-Verification Step (Check alignment)
-    ↓
-Phase 4: SwiftGen (Generate code)
+Phase 1: Baseline → Phase 2+: Target Languages (repeat for ALL) → Verification → SwiftGen
 ```
 
-**Critical:** Complete all phases sequentially. Verification step must confirm all languages aligned before proceeding to Phase 4. If missing keys found, return to Phase 2/3.
+**Critical:**
+- Complete ALL target language translations sequentially before verification
+- Verification step must confirm ALL languages aligned before SwiftGen
+- If missing keys found, return to incomplete target language phase
 
 ### Phase 1: Baseline Localization
 
@@ -128,15 +129,16 @@ Update baseline language file and replace hardcoded strings with L10n references
 
 **Completion:** Baseline updated and code references replaced.
 
-### Phase 2 & 3: Target Language Translations
+### Phase 2+: Target Language Translations (Repeat for ALL Target Languages)
 
-For each target language:
+**For EACH target language in your configuration:**
 
 1. **Identify new keys from Phase 1** - Review the keys added to baseline file
-2. **Translate each new key** from baseline language to target language
-3. **Add translations** to target language's `.strings` file following the same structure
+2. **Translate each new key** from baseline language to this target language
+3. **Add translations** to this target language's `.strings` file following the same structure
 
 **Process:**
+- Complete ONE target language fully before moving to the next
 - Copy new/modified keys from Phase 1 baseline
 - Translate values (not keys) to target language
 - Maintain same key names and structure as baseline
@@ -146,26 +148,26 @@ For each target language:
 
 **After completing ALL target language translations, verify alignment:**
 
-This step confirms all translations are complete and aligned with baseline.
+This step confirms ALL translations are complete and aligned with baseline.
 
 ```bash
 # Check each target language against baseline
-python3 <skill_path>/scripts/check_missing_localizations.py \
-  <localization_dir>/<baseline_lang>.lproj/Localizable.strings \
-  <localization_dir>/<target_lang1>.lproj/Localizable.strings
-
-python3 <skill_path>/scripts/check_missing_localizations.py \
-  <localization_dir>/<baseline_lang>.lproj/Localizable.strings \
-  <localization_dir>/<target_lang2>.lproj/Localizable.strings
+for target_lang in "${target_languages[@]}"; do
+  python3 <skill_path>/scripts/check_missing_localizations.py \
+    <localization_dir>/<baseline_lang>.lproj/Localizable.strings \
+    <localization_dir>/${target_lang}.lproj/Localizable.strings
+done
 ```
 
-**Expected output:** `✅ [target] 文件没有缺失的键。`
+**Example:** `python3 scripts/check_missing_localizations.py Localization/zh-Hans.lproj/Localizable.strings Localization/en.lproj/Localizable.strings`
 
-**If missing keys found:** Return to Phase 2/3 and add missing translations.
+**Expected output for EACH language:** `✅ [target] 文件没有缺失的键。`
 
-**Only proceed to Phase 4 after verification confirms all languages aligned.**
+**If missing keys found:** Return to the incomplete target language phase and add missing translations.
 
-### Phase 4: Generate Swift Code
+**Only proceed to Final Phase after verification confirms ALL languages aligned.**
+
+### Final Phase: Generate Swift Code
 
 **Critical:** Run after ALL changes and verification.
 
@@ -174,6 +176,8 @@ cd <project_root>
 swiftgen
 ```
 
+**Completion:** Code generated with all L10n references available for ALL languages.
+
 ## Scenario 2: Check Missing Translations
 
 **Use when:** User explicitly asks "Check if translations are complete" or "Find missing i18n keys"
@@ -181,7 +185,7 @@ swiftgen
 ### Workflow
 
 1. **Identify baseline language** (usually zh-Hans or en)
-2. **Check each target language** against baseline:
+2. **Check EACH target language** against baseline:
 
 ```bash
 python3 <skill_path>/scripts/check_missing_localizations.py \
@@ -189,12 +193,14 @@ python3 <skill_path>/scripts/check_missing_localizations.py \
   <localization_dir>/<target_lang>.lproj/Localizable.strings
 ```
 
-3. **Review report** - Shows missing keys for each target language
+Repeat for ALL target languages.
+
+3. **Review reports** - Each check shows missing keys for that target language
 4. **Add missing translations** to each target language file
-5. **Re-run verification** to confirm all aligned
+5. **Re-run verification** for all modified languages to confirm all aligned
 6. **Run SwiftGen** if any translations were added
 
-**Completion:** All target languages have complete translations matching baseline.
+**Completion:** ALL target languages have complete translations matching baseline.
 
 ## Scenario 3: Clean Unused Localizations
 
@@ -235,20 +241,20 @@ swiftgen
 
 | Task | Command/Approach | Phase |
 |------|------------------|-------|
-| Extract hardcoded strings | Manual review of provided code | 1 |
+| Extract hardcoded strings | Manual review of provided code | 1 (Baseline) |
 | Add keys to baseline | Edit baseline `.strings` file | 1 |
 | Replace with L10n | `L10n.Module.key` syntax | 1 |
-| Translate to target languages | Copy keys from baseline, translate values | 2-3 |
-| Verify alignment | `python3 scripts/check_missing_localizations.py <baseline> <target>` | After 3 |
-| Generate Swift code | `swiftgen` | 4 |
+| Translate to ALL targets | Copy keys from baseline, translate values sequentially | 2+ |
+| Verify alignment | `python3 scripts/check_missing_localizations.py <baseline> <target>` for EACH target | After ALL translations |
+| Generate Swift code | `swiftgen` | Final |
 
 ### Scenario 2: Check Missing Only
 
 | Task | Command |
 |------|---------|
-| Check one target | `python3 scripts/check_missing_localizations.py <baseline> <target>` |
-| Add missing keys | Edit target `.strings` file |
-| Verify fixed | Re-run check script |
+| Check each target | `python3 scripts/check_missing_localizations.py <baseline> <target>` for ALL targets |
+| Add missing keys | Edit target `.strings` files |
+| Verify fixed | Re-run check script for all modified targets |
 | Generate (if changed) | `swiftgen` |
 
 ### Scenario 3: Cleanup Only
@@ -263,16 +269,27 @@ swiftgen
 
 | Mistake | Fix | Scenario |
 |---------|-----|----------|
-| Running swiftgen before syncing translations | Always complete all 4 phases in order | 1 |
-| Skipping verification step | Always run check script after Phase 3 to confirm all languages aligned | 1 |
+| Running swiftgen before syncing ALL translations | Always complete ALL target language translations before SwiftGen | 1 |
+| Skipping verification step | Always run check script after ALL target translations to confirm ALL languages aligned | 1 |
+| Only verifying some target languages | Check EVERY target language against baseline before SwiftGen | 1, 2 |
 | Using string interpolation on format functions | Call as function: `L10n.Xxx.func(arg1, arg2)` | 1 |
-| Translating placeholders like %@ | Preserve placeholders exactly: `%@`, `%d`, etc. | 1, 2, 3 |
-| Naming keys starting with numbers | Keys must start with letters: `secure3d` not `3dsecure` | 1 |
-| Skipping phase 4 for "later" | SwiftGen MUST run after all changes or code won't compile | 1 |
+| Translating placeholders like %@ | Preserve placeholders exactly: `%@`, `%d`, etc. | 1, 2, 3, 4 |
+| Naming keys starting with numbers | Keys must start with letters: `secure3d` not `3dsecure` | 1, 4 |
+| Skipping final phase for "later" | SwiftGen MUST run after all changes or code won't compile | 1, 2, 3 |
 | Cleanup without --dry-run first | Always preview what will be deleted before actual cleanup | 3 |
 | Forgetting SwiftGen after cleanup | Must regenerate code after removing unused keys | 3 |
 
 ## Key Rules
+
+### 0. Multi-Language Workflow (CRITICAL)
+
+**For projects with multiple target languages:**
+
+- **Sequential completion:** Finish ONE target language completely before starting the next
+- **Baseline as source:** Always copy keys from baseline, never between target languages
+- **Verify ALL languages:** Every target language must be checked against baseline before SwiftGen
+
+**Workflow:** `Baseline → Target1 → Target2 → ... → TargetN → Verify ALL → SwiftGen (once)`
 
 ### 1. Localization Key Naming
 
@@ -361,10 +378,9 @@ Located in `scripts/` directory. For detailed usage, see [scripts/README.md](scr
 - Test translations in actual app context
 
 ### For Scenario 1 (Full Workflow)
-- Start with Phase 1 (baseline first)
-- Use baseline as source for all comparisons
-- **Complete Phase 2 & 3 translations before running verification**
-- **Always run verification step after all translations complete**
+- Start with baseline phase first
+- **Complete ALL target language translations before running verification**
+- **Verify EVERY target language against baseline before SwiftGen**
 - Complete each phase fully before next
 
 ### For Scenario 2 (Check Missing)
