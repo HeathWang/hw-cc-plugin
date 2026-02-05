@@ -14,6 +14,33 @@ Daily development skills and commands, primarily for frontend development, iOS, 
 - **💬 Expert Reviews**: Linus Torvalds-style code review protocol for quality assurance
 - **📝 Git Automation**: Intelligent Git commit workflow with automatic message generation
 - **❓ Q&A Workflow**: Comprehensive question and answer system for code guidance
+- **🌍 iOS Internationalization**: Complete iOS localization workflow with SwiftGen L10n support and multi-language management
+
+## 🚀 Skills
+
+### iOS Internationalization Workflow
+`skills/ios-i18n-workflow/SKILL.md`
+
+Automated iOS internationalization workflow for SwiftGen L10n code generation. Supports multi-language localization management with verification and cleanup capabilities.
+
+**Features:**
+- **Full internationalization workflow**: Extract hardcoded strings, add translations for ALL target languages, verify alignment, and generate Swift code
+- **Translation verification**: Check missing translations across multiple target languages with automated gap detection
+- **Cleanup utilities**: Find and remove unused localization entries with dry-run safety checks
+- **Multi-language support**: Handle any number of target languages with sequential workflow management
+- **Helper scripts**: Python scripts for checking missing translations and cleaning unused entries
+
+**Use Cases:**
+- Internationalize iOS code by replacing hardcoded strings with L10n references
+- Verify translation completeness across multiple languages
+- Clean up unused localization entries
+- Generate SwiftGen code after localization updates
+
+**Key Benefits:**
+- Ensures all target languages are synchronized before code generation
+- Prevents compilation errors from missing translations
+- Automated verification reduces manual checking overhead
+- Supports flexible baseline language configuration
 
 ## 🚀 Commands
 
@@ -116,6 +143,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📖 Documentation
 
+### Skills Documentation
+For detailed skill-specific documentation, please refer to the individual skill files in the `skills/` directory:
+- `skills/ios-i18n-workflow/SKILL.md` - iOS internationalization workflow
+- `skills/ios-i18n-workflow/scripts/README.md` - Helper scripts usage
+- `skills/ios-i18n-workflow/references/naming-conventions.md` - Localization key naming conventions
+- `skills/ios-i18n-workflow/references/advanced-usage.md` - CI/CD integration and automation
+
+### Commands Documentation
 For detailed command-specific documentation, please refer to the individual command files in the `commands/` directory:
 - `commands/gitcommit.md` - Git workflow details
 - `commands/code-review-with-files.md` - Code review methodology
