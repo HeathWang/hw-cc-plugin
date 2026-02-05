@@ -4,14 +4,13 @@ Complete reference for localization key naming and L10n code reference rules in 
 
 ## Localization Key Naming Convention
 
-**Domain-like naming convention with up to 3-level hierarchy, all in lowercase.**
+**Domain-like naming convention with hierarchical structure, all in lowercase.**
 
 ### Key Rules
 
 **CRITICAL:** All key segments MUST start with a letter (a-z), NOT a number.
 
 - Use only lowercase letters, numbers (after the first character of each segment), dots (`.`)
-- Maximum 3 levels of hierarchy
 - Use domain-like naming for clarity
 
 ### Valid Examples
@@ -60,7 +59,7 @@ When referencing localized strings in code using `L10n`, SwiftGen applies specif
 |-----------------|-------------------|---------------------|
 | `common.ok` | `L10n.Common.ok` | Single level → Title Case |
 | `market.back` | `L10n.Market.back` | Two levels → Both Title Case |
-| `market.header.name` | `L10n.Market.Header.name` | Three levels → All Title Case |
+| `market.header.name` | `L10n.Market.Header.name` | Multiple levels → All Title Case |
 | `addbalance.flashexchange.subtitle` | `L10n.Addbalance.Flashexchange.subtitle` | Compound word (flashexchange → Flashexchange, NOT FlashExchange) |
 | `challenge.status.inprogress.full` | `L10n.Challenge.Status.Inprogress.full` | Nested keys (inprogress → Inprogress, NOT InProgress) |
 | `paybridge.error.missingproductid` | `L10n.Paybridge.Error.missingproductid` | Compound key stays lowercase |
@@ -179,7 +178,6 @@ statusLabel.text = L10n.Challenge.Progress.stage(
 
 ### Key Naming Checklist
 - [ ] All segments start with a letter (not a number)
-- [ ] Maximum 3 levels of hierarchy
 - [ ] Lowercase letters, numbers, and dots only
 - [ ] Domain-like naming for clarity
 
@@ -235,7 +233,7 @@ label.text = L10n.Futuresrecords.Header.amountUsdt
 
 1. **Be consistent** with domain naming across the app
 2. **Use descriptive keys** that reflect the UI hierarchy
-3. **Group related keys** using the 3-level hierarchy
+3. **Group related keys** using hierarchical structure
 4. **Avoid abbreviations** unless they're widely understood
 5. **Test format strings** with actual parameter values
 6. **Run swiftgen** immediately after updating `.strings` files

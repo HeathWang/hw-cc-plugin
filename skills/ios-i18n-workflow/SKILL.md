@@ -1,53 +1,90 @@
 ---
 name: ios-i18n-workflow
-description: Use when iOS apps use SwiftGen L10n code generation and need to add localization keys, verify translation completeness, or sync localization files. Triggered by missing L10n references, incomplete translations, or SwiftGen compilation errors.
+description: Use when iOS apps using SwiftGen L10n need localization work - adding keys, checking missing translations, or cleaning unused entries. Triggered by hardcoded strings, missing L10n references, incomplete translations, or unused localization cleanup requests.
 ---
 
 # iOS Internationalization Workflow
 
-Complete workflow for managing iOS app internationalization (i18n) using SwiftGen. Handles baseline localization, translation verification, and code generation.
+Complete workflow for managing iOS app internationalization (i18n) using SwiftGen L10n code generation. Covers three main scenarios: internationalizing code, verifying translation completeness, and cleaning unused entries.
 
 ## When to Use
 
 ```dot
 digraph when_to_use {
-    "Need to handle iOS i18n?" [shape=diamond];
-    "Using SwiftGen for L10n?" [shape=diamond];
-    "Use this skill" [shape=box];
-    "Use standard NSLocalizedString workflow" [shape=box];
+    rankdir=TB;
+    "User provides code/folder for i18n?" [shape=diamond, style=filled, fillcolor=lightblue];
+    "User asks to check missing translations?" [shape=diamond, style=filled, fillcolor=lightgreen];
+    "User asks to clean unused i18n?" [shape=diamond, style=filled, fillcolor=lightyellow];
+    "Standardize" [shape=box, style=filled, fillcolor=lightcoral];
+    "CheckMissing" [shape=box, style=filled, fillcolor=lightcoral];
+    "CleanUp" [shape=box, style=filled, fillcolor=lightcoral];
 
-    "Need to handle iOS i18n?" -> "Using SwiftGen for L10n?" [label="yes"];
-    "Using SwiftGen for L10n?" -> "Use this skill" [label="yes"];
-    "Using SwiftGen for L10n?" -> "Use standard NSLocalizedString workflow" [label="no"];
+    "User provides code/folder for i18n?" -> "Standardize" [label="Yes\n(Full workflow)"];
+    "User asks to check missing translations?" -> "CheckMissing" [label="Yes\n(Verify only)"];
+    "User asks to clean unused i18n?" -> "CleanUp" [label="Yes\n(Cleanup only)"];
 }
 ```
 
-**Use when:**
-- iOS apps using SwiftGen for code-generated L10n references
-- Adding new localization keys or verifying translation completeness
-- Syncing localization files after code changes
-- Replacing hardcoded strings with L10n.xxx calls
+**Three main scenarios:**
+
+1. **Internationalize code** - User provides code or folder: "Here's my view controller, add i18n"
+   → Run full 4-phase workflow (baseline → targets → verify → SwiftGen)
+
+2. **Check missing translations** - User explicitly asks: "Check if translations are complete" or "Find missing i18n keys"
+   → Run check_missing_localizations.py and fill gaps
+
+3. **Clean unused entries** - User explicitly asks: "Clean unused localizations" or "Remove unused i18n keys"
+   → Run clean_unused_localizations.py with dry-run first
 
 **Do NOT use when:**
 - Projects using raw NSLocalizedString without SwiftGen
 - Non-iOS platforms (Android, Web)
 
+## Identifying User Intent
+
+**Determining which scenario applies:**
+
+### Scenario 1: Full Workflow
+User provides code files or folder paths, says things like "internationalize this" or "add i18n to this code"
+
+### Scenario 2: Check Missing
+User asks to verify translation completeness with phrases like "check if translations complete" or "find missing i18n keys"
+
+### Scenario 3: Cleanup
+User requests removal of unused entries with phrases like "clean unused localizations" or "remove unused i18n keys"
+
+**Quick decision guide:**
+- Provides code/folder → **Scenario 1** (Full workflow)
+- Asks to check/verify → **Scenario 2** (Check missing)
+- Asks to clean/remove → **Scenario 3** (Cleanup)
+
 ## Red Flags - STOP and Re-read
 
+**For Scenario 1 (Full internationalization):**
 - "I'll just run swiftgen real quick"
 - "The translations can wait"
 - "I'll add the keys manually"
 - "This phase doesn't apply to my case"
 - "I can skip phase 4 and run it later"
+- "No need to verify with scripts, trust me"
 
-**All of these mean: Read the skill again and follow all 4 phases in order.**
+**For Scenario 2 (Check missing):**
+- "I can just eyeball the files"
+- "Checking one target language is enough"
+- "I'll add keys later"
+
+**For Scenario 3 (Cleanup):**
+- "Just delete everything without checking"
+- "No need for --dry-run first"
+
+**All of these mean: Read the skill again and follow the correct workflow.**
 
 ## Configuration
 
 **Project-specific variables:**
 ```yaml
 project_root: "/path/to/your/iOS/project"
-localization_dir: "Resources/Localization"
+localization_dir: "*/Localization"
 baseline_language: "zh-Hans"  # Source of truth
 target_languages: ["zh-Hant", "en"]
 generated_file: "Generated/Strings.swift"
@@ -55,20 +92,31 @@ generated_file: "Generated/Strings.swift"
 
 **Default structure:**
 ```
-<ProjectRoot>/<localization_dir>/
+<ProjectRoot>/path/<localization_dir>/
 ├── zh-Hans.lproj/Localizable.strings  # Baseline
 ├── zh-Hant.lproj/Localizable.strings
 └── en.lproj/Localizable.strings
 ```
 
-## Workflow Overview
+## Scenario 1: Full Internationalization Workflow
 
-**4 sequential phases:**
+**Use when:** User provides code/folder for internationalization
+
+**Flow:** 4 sequential phases
+
 ```
-Phase 1: Baseline → Phase 2: Target 1 → Phase 3: Target 2 → Phase 4: SwiftGen
+Phase 1: Baseline (Update zh-Hans)
+    ↓
+Phase 2: Target Language 1 (e.g., zh-Hant)
+    ↓
+Phase 3: Target Language 2 (e.g., en)
+    ↓
+Verification Step (Check alignment)
+    ↓
+Phase 4: SwiftGen (Generate code)
 ```
 
-**Key principle:** Complete each phase before moving to next.
+**Critical:** Complete all phases sequentially. Verification step must confirm all languages aligned before proceeding to Phase 4. If missing keys found, return to Phase 2/3.
 
 ### Phase 1: Baseline Localization
 
@@ -84,59 +132,208 @@ Update baseline language file and replace hardcoded strings with L10n references
 
 For each target language:
 
+1. **Identify new keys from Phase 1** - Review the keys added to baseline file
+2. **Translate each new key** from baseline language to target language
+3. **Add translations** to target language's `.strings` file following the same structure
+
+**Process:**
+- Copy new/modified keys from Phase 1 baseline
+- Translate values (not keys) to target language
+- Maintain same key names and structure as baseline
+- Preserve placeholders like `%@`, `%d`, etc.
+
+### Verification Step (CRITICAL)
+
+**After completing ALL target language translations, verify alignment:**
+
+This step confirms all translations are complete and aligned with baseline.
+
 ```bash
+# Check each target language against baseline
 python3 <skill_path>/scripts/check_missing_localizations.py \
   <localization_dir>/<baseline_lang>.lproj/Localizable.strings \
-  <localization_dir>/<target_lang>.lproj/Localizable.strings
+  <localization_dir>/<target_lang1>.lproj/Localizable.strings
+
+python3 <skill_path>/scripts/check_missing_localizations.py \
+  <localization_dir>/<baseline_lang>.lproj/Localizable.strings \
+  <localization_dir>/<target_lang2>.lproj/Localizable.strings
 ```
 
-1. Review missing keys report
-2. Translate missing keys from baseline
-3. Add to target language file
+**Expected output:** `✅ [target] 文件没有缺失的键。`
+
+**If missing keys found:** Return to Phase 2/3 and add missing translations.
+
+**Only proceed to Phase 4 after verification confirms all languages aligned.**
 
 ### Phase 4: Generate Swift Code
 
-**Critical:** Run after ALL changes.
+**Critical:** Run after ALL changes and verification.
 
 ```bash
 cd <project_root>
 swiftgen
 ```
 
+## Scenario 2: Check Missing Translations
+
+**Use when:** User explicitly asks "Check if translations are complete" or "Find missing i18n keys"
+
+### Workflow
+
+1. **Identify baseline language** (usually zh-Hans or en)
+2. **Check each target language** against baseline:
+
+```bash
+python3 <skill_path>/scripts/check_missing_localizations.py \
+  <localization_dir>/<baseline_lang>.lproj/Localizable.strings \
+  <localization_dir>/<target_lang>.lproj/Localizable.strings
+```
+
+3. **Review report** - Shows missing keys for each target language
+4. **Add missing translations** to each target language file
+5. **Re-run verification** to confirm all aligned
+6. **Run SwiftGen** if any translations were added
+
+**Completion:** All target languages have complete translations matching baseline.
+
+## Scenario 3: Clean Unused Localizations
+
+**Use when:** User explicitly asks "Clean unused localizations" or "Remove unused i18n keys"
+
+### Workflow
+
+1. **Dry-run first** (see what would be deleted):
+
+```bash
+cd <project_root>
+python3 <skill_path>/scripts/clean_unused_localizations.py --dry-run
+```
+
+2. **Review the report** - Shows unused entries and usage statistics
+3. **Run actual cleanup** (after confirmation):
+
+```bash
+python3 <skill_path>/scripts/clean_unused_localizations.py
+```
+
+4. **Run SwiftGen** to regenerate code:
+
+```bash
+swiftgen
+```
+
+**Safety:**
+- Script creates `.backup` file before deletion
+- Prompts for confirmation before deleting
+- Requires explicit user confirmation
+
+**Completion:** Unused entries removed, SwiftGen regenerated.
+
 ## Quick Reference
+
+### Scenario 1: Full Internationalization
 
 | Task | Command/Approach | Phase |
 |------|------------------|-------|
-| Check missing translations | `python3 scripts/check_missing_localizations.py <baseline> <target>` | 2-3 |
-| Clean unused entries | `python3 scripts/clean_unused_localizations.py --dry-run` | Any |
+| Extract hardcoded strings | Manual review of provided code | 1 |
+| Add keys to baseline | Edit baseline `.strings` file | 1 |
+| Replace with L10n | `L10n.Module.key` syntax | 1 |
+| Translate to target languages | Copy keys from baseline, translate values | 2-3 |
+| Verify alignment | `python3 scripts/check_missing_localizations.py <baseline> <target>` | After 3 |
 | Generate Swift code | `swiftgen` | 4 |
-| Key naming rule | Letters/numbers/dots, start with letter | 1 |
-| Format string → Function | `L10n.Xxx.func(arg1, arg2)` | 1 |
+
+### Scenario 2: Check Missing Only
+
+| Task | Command |
+|------|---------|
+| Check one target | `python3 scripts/check_missing_localizations.py <baseline> <target>` |
+| Add missing keys | Edit target `.strings` file |
+| Verify fixed | Re-run check script |
+| Generate (if changed) | `swiftgen` |
+
+### Scenario 3: Cleanup Only
+
+| Task | Command |
+|------|---------|
+| Preview cleanup | `python3 scripts/clean_unused_localizations.py --dry-run` |
+| Execute cleanup | `python3 scripts/clean_unused_localizations.py` |
+| Regenerate | `swiftgen` |
 
 ## Common Mistakes
 
-| Mistake | Fix |
-|---------|-----|
-| Running swiftgen before syncing translations | Always complete all 4 phases in order |
-| Using string interpolation on format functions | Call as function: `L10n.Xxx.func(arg1, arg2)` |
-| Translating placeholders like %@ | Preserve placeholders exactly: `%@`, `%d`, etc. |
-| Naming keys starting with numbers | Keys must start with letters: `secure3d` not `3dsecure` |
-| Skipping phase 4 for "later" | SwiftGen MUST run after all changes or code won't compile |
+| Mistake | Fix | Scenario |
+|---------|-----|----------|
+| Running swiftgen before syncing translations | Always complete all 4 phases in order | 1 |
+| Skipping verification step | Always run check script after Phase 3 to confirm all languages aligned | 1 |
+| Using string interpolation on format functions | Call as function: `L10n.Xxx.func(arg1, arg2)` | 1 |
+| Translating placeholders like %@ | Preserve placeholders exactly: `%@`, `%d`, etc. | 1, 2, 3 |
+| Naming keys starting with numbers | Keys must start with letters: `secure3d` not `3dsecure` | 1 |
+| Skipping phase 4 for "later" | SwiftGen MUST run after all changes or code won't compile | 1 |
+| Cleanup without --dry-run first | Always preview what will be deleted before actual cleanup | 3 |
+| Forgetting SwiftGen after cleanup | Must regenerate code after removing unused keys | 3 |
 
 ## Key Rules
 
-**Quick summary:**
-- Keys: 3-level hierarchy, lowercase, MUST start with letters (not numbers)
-- L10n refs: Title Case for all levels, last level snake_case → camelCase
-- Format strings: Generate FUNCTIONS, not properties
+### 1. Localization Key Naming
+
+**Core requirements:**
+- Domain-like naming with hierarchical structure
+- **All lowercase** letters, numbers (after first character), and dots (.)
+- **CRITICAL**: Each segment MUST start with a **letter** (a-z), NOT a number
+- Use descriptive, domain-based names for clarity
 
 **Examples:**
-✅ `common.ok` → `L10n.Common.ok`
-✅ `market.header.name` → `L10n.Market.Header.name`
-✅ `futuresrecords.header.amount_usdt` → `L10n.Futuresrecords.Header.amountUsdt`
-❌ `3dsecure.confirm` (starts with number) → Use `secure3d.confirm`
+```
+✅ common.ok
+✅ market.header.name
+✅ trade.confirm.title
+✅ futuresrecords.header.amount_usdt
 
-**For detailed rules, examples, and troubleshooting:** See [references/naming-conventions.md](references/naming-conventions.md)
+❌ symboldetail.24h.high (number in middle) → Use symboldetail.daily.high
+❌ 2fa.enabled (starts with number) → Use twofa.enabled
+```
+
+### 2. L10n Code Reference Transformation
+
+**SwiftGen auto-transforms keys to code references:**
+
+- **All levels except last**: Title Case (capitalize first letter only)
+- **Last level**:
+  - Contains underscores (`snake_case`) → convert to `camelCase`
+  - Single lowercase word → keep as-is
+  - Compound words without underscores → stay lowercase
+
+**Examples:**
+| Localization Key | L10n Reference | Notes |
+|-----------------|----------------|-------|
+| `common.ok` | `L10n.Common.ok` | Single level |
+| `market.header.name` | `L10n.Market.Header.name` | All Title Case |
+| `futuresrecords.header.amount_usdt` | `L10n.Futuresrecords.Header.amountUsdt` | Last: snake_case → camelCase |
+| `paybridge.error.missingproductid` | `L10n.Paybridge.Error.missingproductid` | Compound stays lowercase |
+| `challenge.status.inprogress.full` | `L10n.Challenge.Status.Inprogress.full` | inprogress → Inprogress |
+
+### 3. Format Strings (with Parameters)
+
+**When localization strings contain format specifiers** (`%@`, `%d`, `%f`, etc.), SwiftGen generates a **FUNCTION**, not a static property.
+
+**Format specifier examples:**
+- `%@` - Any object (String, etc.)
+- `%d` / `%i` - Integer
+- `%f` - Float/Double
+- `%.2f` - Formatted float
+- `%%` - Literal percent (does NOT create parameter)
+
+**Usage examples:**
+```swift
+// Static property (no format specifiers)
+button.setTitle(L10n.Common.ok, for: .normal)
+
+// Function call (with format specifiers)
+label.text = L10n.Challenge.Progress.stage(phaseText, statusText)
+label.text = L10n.Futurestrading.Orderbook.fundingrate(8)
+```
+
+**For detailed examples, troubleshooting, and migration guide:** See [references/naming-conventions.md](references/naming-conventions.md)
 
 ## Helper Scripts
 
@@ -158,11 +355,28 @@ Located in `scripts/` directory. For detailed usage, see [scripts/README.md](scr
 
 ## Best Practices
 
-1. Start with Phase 1 (baseline first)
-2. Use baseline as source for all comparisons
-3. Run `swiftgen` after ALL changes (critical)
-4. Test translations in app
-5. Clean unused entries periodically
+### For All Scenarios
+- Always verify with scripts before assuming completeness
+- Run SwiftGen after any localization file changes
+- Test translations in actual app context
+
+### For Scenario 1 (Full Workflow)
+- Start with Phase 1 (baseline first)
+- Use baseline as source for all comparisons
+- **Complete Phase 2 & 3 translations before running verification**
+- **Always run verification step after all translations complete**
+- Complete each phase fully before next
+
+### For Scenario 2 (Check Missing)
+- Check ALL target languages, not just one
+- Re-run verification after adding missing keys
+- Run SwiftGen if any keys were added
+
+### For Scenario 3 (Cleanup)
+- Always use --dry-run first
+- Review the cleanup report before confirming
+- Clean periodically (e.g., before releases)
+- Keep backup files until verified in app
 
 ## Requirements
 
