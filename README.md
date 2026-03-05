@@ -133,6 +133,16 @@ Provides comprehensive Q&A workflow with full read access to project files and d
 3. Install
 4. restart claude code
 
+### Codex
+
+Tell Codex:
+
+```text
+Fetch and follow instructions from https://raw.githubusercontent.com/HeathWang/hw-cc-plugin/refs/heads/main/.codex/INSTALL.md
+```
+
+**Detailed docs:** [`.codex/INSTALL.md`](.codex/INSTALL.md)
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
