@@ -138,7 +138,7 @@ Provides comprehensive Q&A workflow with full read access to project files and d
 Tell Codex:
 
 ```text
-Fetch and follow instructions from https://raw.githubusercontent.com/HeathWang/hw-cc-plugin/refs/heads/main/.codex/INSTALL.md
+Fetch and follow instructions from https://raw.githubusercontent.com/HeathWang/hw-cc-plugin/refs/heads/master/.codex/INSTALL.md
 ```
 
 **Detailed docs:** [`.codex/INSTALL.md`](.codex/INSTALL.md)
