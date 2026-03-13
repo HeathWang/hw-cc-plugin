@@ -1,10 +1,10 @@
 # hw-cc-plugin
 
-Daily development skills and commands, primarily for frontend development, iOS, H5, and more.
+Daily development skills, primarily for frontend development, iOS, H5, and more.
 
 ## 📋 Overview
 
-**hw-cc-plugin** is a comprehensive Claude Code plugin designed to streamline your daily development workflow. It provides a collection of powerful commands and skills for code conversion, review, bug analysis, and Git workflow automation.
+**hw-cc-plugin** is a comprehensive Claude Code plugin designed to streamline your daily development workflow. It provides a collection of powerful skills for code conversion, review, bug analysis, and Git workflow automation.
 
 ## ✨ Features
 
@@ -18,7 +18,86 @@ Daily development skills and commands, primarily for frontend development, iOS, 
 
 ## 🚀 Skills
 
-### iOS Internationalization Workflow
+### 1. Git Commit Workflow
+`skills/git-commit-workflow/SKILL.md`
+
+Automates the Git commit process with intelligent file staging and Chinese commit message generation following Conventional Commits format.
+
+**Features:**
+- Smart file grouping by functionality
+- Automatic commit message generation in Chinese
+- Conventional Commits format with emojis
+- Loops until working tree is clean
+
+### 2. Code Review with Files
+`skills/code-review-with-files/SKILL.md`
+
+Performs comprehensive code reviews across multiple dimensions including correctness, performance, security, edge cases, and code quality.
+
+**Features:**
+- Multi-dimensional analysis (7+ review dimensions)
+- Severity-based issue classification (Critical, High, Medium, Low)
+- Detailed feedback with file locations and solutions
+- All outputs in Simplified Chinese
+
+### 3. Bug Analysis
+`skills/bug-analysis/SKILL.md`
+
+Provides systematic bug analysis and code issue diagnosis with automatic file location and comprehensive root cause analysis.
+
+**Features:**
+- Technology stack detection (iOS, React, Python, Java Spring)
+- 4 levels of investigation depth
+- Proactive file discovery
+- Detailed analysis output with testing plans
+
+### 4. Linus Torvalds Code Review
+`skills/linus-torvalds-review/SKILL.md`
+
+Emulates Linus Torvalds' unique code review philosophy focusing on good taste, pragmatism, and simplicity.
+
+**Features:**
+- Context-aware review protocols
+- Multi-dimensional analysis (data structures, special cases, complexity, breaking changes)
+- Direct, sharp feedback style
+- Responds in user's language
+
+### 5. Java to Next.js TypeScript Conversion
+`skills/java-to-nextjs/SKILL.md`
+
+Converts Java 1.8 classes to Next.js TypeScript interface definitions with precise type mapping and nullability handling.
+
+**Features:**
+- Java 1.8 → TypeScript 5.0+ conversion
+- Special annotation handling (`@BigDecimalToNumber`, `@TimestampFormat`)
+- Inheritance handling (extension vs flattening)
+- Property names preserved to match API contracts
+- Output as markdown code blocks only — never modifies project files
+
+### 6. Java to Swift Conversion
+`skills/java-to-swift/SKILL.md`
+
+Converts Java 1.8 classes to Swift 5.0+ struct objects with Codable conformance.
+
+**Features:**
+- Java 1.8 → Swift 5.0+ conversion
+- Special annotation handling (`@BigDecimalToString`)
+- Flattened inheritance structure
+- Codable protocol conformance
+- Output as markdown code blocks only — never modifies project files
+
+### 7. Question & Answer
+`skills/question-answer/SKILL.md`
+
+Provides comprehensive Q&A workflow with full read access to project files and detailed technical guidance.
+
+**Features:**
+- Read-only file access for code analysis
+- Systematic problem-solving approach
+- Structured response format
+- Educational and advisory focus
+
+### 8. iOS Internationalization Workflow
 `skills/ios-i18n-workflow/SKILL.md`
 
 Automated iOS internationalization workflow for SwiftGen L10n code generation. Supports multi-language localization management with verification and cleanup capabilities.
@@ -36,102 +115,14 @@ Automated iOS internationalization workflow for SwiftGen L10n code generation. S
 - Clean up unused localization entries
 - Generate SwiftGen code after localization updates
 
-**Key Benefits:**
-- Ensures all target languages are synchronized before code generation
-- Prevents compilation errors from missing translations
-- Automated verification reduces manual checking overhead
-- Supports flexible baseline language configuration
-
-## 🚀 Commands
-
-### 1. Git Commit Workflow
-`gitcommit.md`
-
-Automates the Git commit process with intelligent file staging and Chinese commit message generation following Conventional Commits format.
-
-**Features:**
-- Smart file grouping by functionality
-- Automatic commit message generation in Chinese
-- Conventional Commits format with emojis
-- Markdown-formatted change details
-
-### 2. Code Review with Files
-`code-review-with-files.md`
-
-Performs comprehensive code reviews across multiple dimensions including correctness, performance, security, edge cases, and code quality.
-
-**Features:**
-- Multi-dimensional analysis (7+ review dimensions)
-- Severity-based issue classification (Critical, High, Medium, Low)
-- Detailed feedback with locations and solutions
-- All outputs in Simplified Chinese
-
-### 3. Bug Analysis
-`bug-analysis.md`
-
-Provides systematic bug analysis and code issue diagnosis with automatic file location and comprehensive root cause analysis.
-
-**Features:**
-- Technology stack detection (iOS, React, Python, Java Spring)
-- 4 levels of investigation depth
-- Proactive file discovery
-- Detailed analysis output with testing plans
-
-### 4. Linus Torvalds Code Review
-`linus-torvalds-code-review.md`
-
-Emulates Linus Torvalds' unique code review philosophy focusing on good taste, pragmatism, and simplicity.
-
-**Features:**
-- Context-aware review protocols
-- Multi-dimensional analysis (data structures, special cases, complexity, breaking changes)
-- Direct, sharp feedback style
-- All communications in Chinese
-
-### 5. Java to Next.js TypeScript Conversion
-`Java-to-Nextjs-Conversion.md`
-
-Converts Java 1.8 classes to Next.js TypeScript interface definitions with precise type mapping and nullability handling.
-
-**Features:**
-- Java 1.8 → TypeScript 5.0+ conversion
-- Special annotation handling (@BigDecimalToNumber, @TimestampFormat)
-- Inheritance handling (extension vs flattening)
-- Property names preserved to match API contracts
-
-### 6. Java to Swift Conversion
-`java-to-swift-conversion.md`
-
-Converts Java 1.8 classes to Swift 5.0+ struct objects with Codable conformance.
-
-**Features:**
-- Java 1.8 → Swift 5.0+ conversion
-- Special annotation handling (@BigDecimalToString)
-- Flattened inheritance structure
-- Codable protocol conformance
-
-### 7. Question & Answer
-`question-answer.md`
-
-Provides comprehensive Q&A workflow with full read access to project files and detailed technical guidance.
-
-**Features:**
-- Read-only file access for code analysis
-- Systematic problem-solving approach
-- Structured response format
-- Educational and advisory focus
-
 ## 📦 Installation
 
-### Requirements
-- Claude Code environment
-- No additional dependencies required
+### Claude Code
 
-### Setup
-1. `/plugin` -> Add Marketplace
-2. type `HeathWang/hw-cc-plugin`
+1. `/plugin` → Add Marketplace
+2. Type `HeathWang/hw-cc-plugin`
 3. Install
-4. restart claude code
+4. Restart Claude Code
 
 ### Codex
 
@@ -153,26 +144,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📖 Documentation
 
-### Skills Documentation
-For detailed skill-specific documentation, please refer to the individual skill files in the `skills/` directory:
+For detailed skill-specific documentation, refer to the individual skill files in the `skills/` directory:
+
+- `skills/git-commit-workflow/SKILL.md` - Git workflow details
+- `skills/code-review-with-files/SKILL.md` - Code review methodology
+- `skills/bug-analysis/SKILL.md` - Bug analysis framework
+- `skills/linus-torvalds-review/SKILL.md` - Linus review protocol
+- `skills/java-to-nextjs/SKILL.md` - TypeScript conversion rules
+- `skills/java-to-swift/SKILL.md` - Swift conversion rules
+- `skills/question-answer/SKILL.md` - Q&A workflow details
 - `skills/ios-i18n-workflow/SKILL.md` - iOS internationalization workflow
 - `skills/ios-i18n-workflow/scripts/README.md` - Helper scripts usage
 - `skills/ios-i18n-workflow/references/naming-conventions.md` - Localization key naming conventions
 - `skills/ios-i18n-workflow/references/advanced-usage.md` - CI/CD integration and automation
-
-### Commands Documentation
-For detailed command-specific documentation, please refer to the individual command files in the `commands/` directory:
-- `commands/gitcommit.md` - Git workflow details
-- `commands/code-review-with-files.md` - Code review methodology
-- `commands/bug-analysis.md` - Bug analysis framework
-- `commands/linus-torvalds-code-review.md` - Linus review protocol
-- `commands/Java-to-Nextjs-Conversion.md` - Type conversion rules
-- `commands/java-to-swift-conversion.md` - Swift conversion rules
-- `commands/question-answer.md` - Q&A workflow details
-
-## 🎉 Acknowledgments
-
-Built to enhance daily development workflows and improve code quality across multiple platforms and technologies.
 
 ---
 
