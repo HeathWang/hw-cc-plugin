@@ -1,6 +1,7 @@
 ---
 name: java-to-swift
 description: Use when converting Java 1.8 classes to Swift 5.0+ Codable structs - handling type mapping, nullability, inheritance flattening, BaseReq exclusions, and property naming conventions.
+allowed-tools: Read, Grep, Glob
 ---
 
 # Java to Swift Conversion

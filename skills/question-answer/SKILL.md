@@ -1,6 +1,7 @@
 ---
 name: question-answer
-description: Use when answering technical questions about a codebase - reading and analyzing project files to provide comprehensive, accurate guidance without modifying any files.
+description: Use when answering technical questions about a codebase - reading and analyzing project files to provide comprehensive, accurate guidance without modifying any files. Triggered by "explain", "how does X work", "why does X happen", or any question about code behavior or architecture.
+allowed-tools: Read, Grep, Glob, WebFetch, WebSearch
 ---
 
 # Question & Answer Workflow

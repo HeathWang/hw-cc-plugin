@@ -1,6 +1,6 @@
 ---
 name: bug-analysis
-description: Use when diagnosing bugs, crashes, or unexpected behavior in iOS, React, Python, or Java Spring code - including root cause analysis, evidence gathering, and fix recommendations. Output in Chinese.
+description: Use when diagnosing bugs, crashes, or unexpected behavior in iOS, React, Python, or Java Spring code. Triggered by error messages, stack traces, crash reports, or when user says "analyze this bug" or "why is this crashing". Performs root cause analysis, evidence gathering, and fix recommendations. Output in Chinese.
 ---
 
 # Bug Analysis

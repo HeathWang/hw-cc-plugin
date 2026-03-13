@@ -1,6 +1,6 @@
 ---
 name: linus-torvalds-review
-description: Use when doing a code review or design analysis from the perspective of Linus Torvalds - applying principles of good taste, simplicity, pragmatism, and zero tolerance for unnecessary complexity.
+description: Use when doing a code review or design analysis from the perspective of Linus Torvalds - applying principles of good taste, simplicity, pragmatism, and zero tolerance for unnecessary complexity. Triggered by "linus review", "brutal review", "is this code good", or requests for opinionated technical critique.
 ---
 
 # Linus Torvalds Code Review Protocol

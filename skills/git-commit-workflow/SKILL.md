@@ -1,6 +1,6 @@
 ---
 name: git-commit-workflow
-description: Use when committing code changes to git - staging files, writing commit messages, or completing a batch of uncommitted changes across multiple logical groups.
+description: Use when committing code changes to git - staging files, writing commit messages (in Chinese), or completing a batch of uncommitted changes across multiple logical groups. Triggered by "commit", "gitcommit", or unstaged changes needing to be committed.
 ---
 
 # Git Commit Workflow

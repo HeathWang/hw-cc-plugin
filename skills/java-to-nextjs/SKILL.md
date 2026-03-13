@@ -1,6 +1,7 @@
 ---
 name: java-to-nextjs
 description: Use when converting Java 1.8 classes to Next.js TypeScript interface definitions - handling type mapping, nullability, inheritance, naming conventions, and BaseReq/BaseResponse exclusions.
+allowed-tools: Read, Grep, Glob
 ---
 
 # Java to Next.js TypeScript Conversion
