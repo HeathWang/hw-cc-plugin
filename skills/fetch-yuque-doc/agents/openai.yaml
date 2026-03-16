@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fetch Yuque Doc"
+  short_description: "Fetch a Yuque page via a logged-in browser."
+  default_prompt: "Use $fetch-yuque-doc to fetch a Yuque document from a page URL through a local logged-in Chrome-family browser."
