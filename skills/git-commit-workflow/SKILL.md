@@ -1,13 +1,15 @@
 ---
 name: git-commit-workflow
-description: Use when committing code changes to git - staging files, writing commit messages (in Chinese), or completing a batch of uncommitted changes across multiple logical groups. Triggered by "commit", "gitcommit", or unstaged changes needing to be committed.
+description: Use when committing code changes to git, especially when users already prepared staged files, when changes must be split into multiple logical commits, or when remaining staged or unstaged changes must continue to be processed until the working tree is clean.
 ---
 
 # Git Commit Workflow
 
 ## Overview
 
-Sequential git commit workflow that intelligently groups related files, generates Chinese commit messages following Conventional Commits, and loops until the working tree is clean.
+Sequential git commit workflow that preserves user-prepared staged changes for the current round, intelligently groups the rest into logical commits, generates Chinese commit messages following Conventional Commits, and loops until the working tree is clean unless the user explicitly asks to stop.
+
+**Core principle:** If files are already staged, the current staged set is the commit unit for this round. If `git status` still shows any remaining changes after a commit, the workflow is not complete yet unless the user explicitly says to stop.
 
 ## When to Use
 
@@ -25,7 +27,12 @@ Wait for output before proceeding.
 
 ### Step 2: Intelligent File Staging
 
-**If files are already staged** → proceed to Step 3.
+**If files are already staged** → treat the current staged set as authoritative for this round and proceed directly to Step 3.
+
+When files are already staged:
+- Read and commit **only** the current staged diff for this round
+- Do **not** run additional `git add` for this round
+- Do **not** unstage, reset, regroup, or otherwise modify the existing staged set unless the user explicitly asks you to
 
 **If no files staged** → group related files by functionality:
 - Feature changes: Model + View + ViewModel + ViewController files
@@ -45,11 +52,13 @@ git add <file1> <file2> ...
 git diff --cached
 ```
 
-Analyze changes, then **immediately generate and execute** commit:
+Analyze the currently staged changes, then **immediately generate and execute** commit:
 
 ```bash
 git commit -m "<generated_message>"
 ```
+
+If Step 2 entered through the "files are already staged" branch, `git diff --cached` must be based on the user's existing staged set as-is for this round.
 
 #### Commit Message Requirements
 
@@ -74,8 +83,19 @@ feat(user): 重构用户数据模型和视图 (3个文件)
 
 After each commit, run `git status` again.
 
-- **No remaining changes** → workflow complete 🎉
-- **Remaining changes** → repeat from Step 2 for the next logical group
+- **No remaining staged / unstaged / untracked changes** → workflow complete 🎉
+- **Any remaining staged / unstaged / untracked changes** → you must repeat from Step 2 for the next logical group
+
+Do **not** treat "the first commit succeeded" as completion. The workflow only ends when `git status` shows no remaining changes, or when the user explicitly tells you to stop after the current round.
+
+Natural-language stop instructions such as "剩下的改动之后再说", "先提交这一轮", "先到这里", or "其他改动下次再处理" count as explicit instructions to stop after the current round.
+
+If the first round used user-prepared staged files and `git status` still shows other changes afterward, continue with a new round:
+1. Re-check whether anything is currently staged
+2. If nothing is staged, stage only the next logical group
+3. Review with `git diff --cached`
+4. Commit
+5. Run `git status` again
 
 ## Key Principles
 
@@ -86,3 +106,45 @@ After each commit, run `git status` again.
 | Smart grouping | Stage related files together |
 | One logical unit per commit | Each commit = single cohesive change |
 | Output verification | Confirm each command's output before proceeding |
+| Preserve existing staged set | If files are already staged, do not reshape the index for that round |
+| Keep looping until clean | A successful commit is only one round; continue until `git status` is clean or the user says stop |
+
+## Quick Reference
+
+| Situation | Required action |
+|-----------|-----------------|
+| Files already staged | Skip new staging and go straight to `git diff --cached` |
+| User says staged files are already prepared | Treat current staged set as fixed for this round |
+| No files staged | Stage only one logical group, not everything |
+| Commit succeeded but changes remain | Run `git status` and continue the next round |
+| User explicitly says stop after this round | Stop after the current round and report remaining changes |
+
+## Common Mistakes
+
+- **Mistake:** Seeing staged files and re-running `git add` anyway
+  **Fix:** Existing staged files define the commit unit for this round; do not modify the index unless the user explicitly asks.
+- **Mistake:** Finishing after the first successful commit
+  **Fix:** A successful commit is only one loop iteration. Always run `git status` and continue if any changes remain.
+- **Mistake:** Staging all remaining files at once after the first commit
+  **Fix:** Stage only the next logical group for the next round.
+- **Mistake:** Assuming unstaged files are out of scope without user instruction
+  **Fix:** If changes remain and the user did not tell you to stop, continue the workflow.
+
+## Rationalization Traps
+
+| Excuse | Reality |
+|--------|---------|
+| "There are already staged files, but I should regroup them to be safer." | No. Existing staged files are authoritative for this round unless the user explicitly asks you to change them. |
+| "The first commit worked, so the task is basically done." | No. A successful commit is one round only; `git status` decides whether the workflow is complete. |
+| "The user said '之后再说', but that is not explicit enough." | It is explicit enough. Natural-language stop instructions count as a stop signal for the current round. |
+| "I can just stage all remaining files now to finish faster." | No. Stage only the next logical group for the next round. |
+
+## Red Flags
+
+- You are about to run `git add` even though files are already staged
+- You are about to unstage or regroup files without an explicit user request
+- You are treating "first commit succeeded" as completion
+- You are ignoring remaining changes still shown by `git status`
+- You are dismissing "剩下的改动之后再说" or similar wording as not explicit enough
+
+**If any red flag appears, stop and return to the workflow rules above.**
