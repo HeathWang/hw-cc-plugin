@@ -9,7 +9,7 @@ description: Use when committing code changes to git, especially when users alre
 
 Sequential git commit workflow that preserves user-prepared staged changes for the current round, intelligently groups the rest into logical commits, generates Chinese commit messages following Conventional Commits, and loops until the working tree is clean unless the user explicitly asks to stop.
 
-**Core principle:** If files are already staged, the current staged set is the commit unit for this round. If `git status` still shows any remaining changes after a commit, the workflow is not complete yet unless the user explicitly says to stop.
+**Core principle:** If files are already staged, the current staged set is the commit unit for this round. If `git status` still shows any remaining changes after a commit, the workflow is not complete yet unless the user explicitly says to stop. Do not add extra commit metadata, trailers, or attribution unless the user explicitly requests them.
 
 ## When to Use
 
@@ -58,6 +58,9 @@ Analyze the currently staged changes, then **immediately generate and execute** 
 git commit -m "<generated_message>"
 ```
 
+DO NOT add extra `git commit` flags or metadata on your own. Unless the user explicitly requests otherwise, do **NOT** add `--trailer`, `--signoff`, `Co-authored-by`, `Made-with: Cursor`, AI attribution, or any similar provenance/source marker.
+Do not introduce such metadata through hooks, commit templates, editor content, or git configuration either. If unrequested metadata appears unexpectedly, stop and tell the user instead of silently normalizing it into the workflow.
+
 If Step 2 entered through the "files are already staged" branch, `git diff --cached` must be based on the user's existing staged set as-is for this round.
 
 #### Commit Message Requirements
@@ -67,6 +70,7 @@ If Step 2 entered through the "files are already staged" branch, `git diff --cac
 3. Subject line: `type(scope): 简述 (N个文件)`
 4. Body: numbered list of changes (`1. ...`, `2. ...`)
 5. Footer: 3–5 emojis reflecting the nature of changes (✨ feat, 🐛 fix, 🚀 perf, 🎨 UI, 📝 docs)
+6. Do not append extra trailers, signatures, attribution lines, or source markers unless the user explicitly asks for them
 
 #### Example
 
@@ -107,6 +111,7 @@ If the first round used user-prepared staged files and `git status` still shows 
 | One logical unit per commit | Each commit = single cohesive change |
 | Output verification | Confirm each command's output before proceeding |
 | Preserve existing staged set | If files are already staged, do not reshape the index for that round |
+| No unsolicited metadata | Do NOT add trailers, signoffs, AI attributions, or other commit metadata unless the user explicitly requests them |
 | Keep looping until clean | A successful commit is only one round; continue until `git status` is clean or the user says stop |
 
 ## Quick Reference
@@ -117,6 +122,7 @@ If the first round used user-prepared staged files and `git status` still shows 
 | User says staged files are already prepared | Treat current staged set as fixed for this round |
 | No files staged | Stage only one logical group, not everything |
 | Commit succeeded but changes remain | Run `git status` and continue the next round |
+| User did not request extra metadata | Use a plain commit command and message only; do not add trailers, signoffs, or attribution markers |
 | User explicitly says stop after this round | Stop after the current round and report remaining changes |
 
 ## Common Mistakes
@@ -129,6 +135,8 @@ If the first round used user-prepared staged files and `git status` still shows 
   **Fix:** Stage only the next logical group for the next round.
 - **Mistake:** Assuming unstaged files are out of scope without user instruction
   **Fix:** If changes remain and the user did not tell you to stop, continue the workflow.
+- **Mistake:** Adding `--trailer "Made-with: Cursor"` or any similar metadata because it feels harmless or convenient
+  **Fix:** Do not add commit trailers, signoffs, attribution lines, or source markers unless the user explicitly requests them.
 
 ## Rationalization Traps
 
@@ -138,6 +146,7 @@ If the first round used user-prepared staged files and `git status` still shows 
 | "The first commit worked, so the task is basically done." | No. A successful commit is one round only; `git status` decides whether the workflow is complete. |
 | "The user said '之后再说', but that is not explicit enough." | It is explicit enough. Natural-language stop instructions count as a stop signal for the current round. |
 | "I can just stage all remaining files now to finish faster." | No. Stage only the next logical group for the next round. |
+| "Adding `--trailer \"Made-with: Cursor\"` is fine because it does not change the code." | No. Unrequested commit metadata is still an unauthorized change to the commit content. Do not add it unless the user explicitly asks. |
 
 ## Red Flags
 
@@ -146,5 +155,7 @@ If the first round used user-prepared staged files and `git status` still shows 
 - You are treating "first commit succeeded" as completion
 - You are ignoring remaining changes still shown by `git status`
 - You are dismissing "剩下的改动之后再说" or similar wording as not explicit enough
+- You are about to add `--trailer`, `--signoff`, attribution lines, or any `Made-with: Cursor`-style marker that the user did not explicitly request
+- You notice unrequested attribution or trailer text being injected by hooks, templates, editor content, or local git configuration
 
 **If any red flag appears, stop and return to the workflow rules above.**
