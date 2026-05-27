@@ -1,5 +1,7 @@
 # hw-cc-plugin
 
+**Language:** English | [简体中文](README.zh-CN.md)
+
 Daily development skills, primarily for frontend development, iOS, H5, and more.
 
 ## 📋 Overview
