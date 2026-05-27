@@ -18,6 +18,10 @@
 - **❓ 问答工作流**：基于项目文件进行技术问题分析和指导
 - **🌍 iOS 国际化**：支持 SwiftGen L10n 的完整多语言管理流程
 - **🏗️ 架构分析**：在 `docs/Analytics/` 下生成可持久保存的架构分析报告
+- **📄 PRD 与交接**：将已讨论清楚的上下文整理成 PRD 或后续 Agent 可接手的交接文档
+- **🧠 方案拷问**：结合代码、术语表、ADR 和既有文档对技术方案进行压力测试
+- **🔗 语雀文档获取**：通过本地已登录浏览器会话获取单篇语雀文档
+- **⚡ 沟通模式**：在用户明确要求时提供更短、更省 token 的技术回复
 
 ## 🚀 Skills
 
@@ -141,6 +145,101 @@
 - 明确停止条件：不生成临时 HTML，不创建 GitHub Issue，不进入额外设计循环
 - 可结合 `CONTEXT.md` 领域语言和 ADR 约束
 
+### 10. Fetch Yuque Doc
+
+`skills/fetch-yuque-doc/SKILL.md`
+
+通过本地已登录的 Chrome 系浏览器，从用户提供的语雀页面链接获取单篇文档，适合无法或不希望使用 API Token 访问私有空间文档的场景。
+
+**能力：**
+
+- 校验单篇 `yuque.com` 或 `*.yuque.com` 文档 URL
+- 复用本地 Chrome、Chromium 或 Edge 会话，并在 macOS 上优先使用 AppleScript
+- 支持 Markdown 阅读输出和 JSON 结构化输出
+- 明确报告 URL、浏览器、Profile、启动或正文提取相关错误
+- 严格限定为单篇文档获取，不扩展为爬虫、导出器或同步工具
+
+### 11. Diagnose
+
+`skills/diagnose/SKILL.md`
+
+面向疑难 Bug、间歇性故障、生产事故、客户反馈失败、崩溃、不明确回归，以及复现或修复信心不足的调试场景。
+
+**能力：**
+
+- 优先构建快速、确定性的通过/失败反馈循环
+- 要求先复现并捕获准确症状，再进入根因分析
+- 在打点或修复前生成多个可证伪的排序假设
+- 指导定向调试探针、回归测试和原始场景验证
+- 在宣布修复前完成清理和复盘检查
+
+### 12. Grill Me
+
+`skills/grill-me/SKILL.md`
+
+对计划、设计、架构或技术方案进行压力测试，通过一次一个问题的方式逐步走完关键决策分支，直到形成共同理解。
+
+**能力：**
+
+- 用连续、聚焦的问题挑战方案
+- 每个问题都给出推荐答案或默认立场，便于用户判断
+- 当仓库证据能够回答问题时，优先探索代码而不是追问用户
+- 在结束时总结已达成方向、剩余风险和未解决问题
+
+### 13. Grill with Docs
+
+`skills/grill-with-docs/SKILL.md`
+
+结合项目领域语言、术语表、`CONTEXT.md`、ADR、既有决策、代码行为和易混淆术语，对方案进行文档感知的压力测试。
+
+**能力：**
+
+- 先有限扫描上下文文档、ADR 和明显的代码术语
+- 发现方案用语与既有术语表冲突时立即指出
+- 用具体场景澄清领域边界和边界条件
+- 术语达成一致后即时更新 `CONTEXT.md`，无法编辑时说明应写入的具体内容
+- 仅在难以回退、缺少上下文会令人困惑、且确实存在权衡时建议创建 ADR
+
+### 14. To PRD
+
+`skills/to-prd/SKILL.md`
+
+基于当前对话上下文和代码库理解生成 PRD，适合需求、实现决策或产品范围已经讨论过的场景。
+
+**能力：**
+
+- 不重复追问对话中已经明确的需求
+- 梳理需要新增或修改的模块，并关注可测试的深模块
+- 要求确认模块范围和需要编写测试的模块
+- 使用固定 PRD 模板覆盖问题、方案、用户故事、实现决策、测试决策、范围和补充说明
+- 仅在项目配置和 triage label 可确认时发布到 issue tracker
+
+### 15. Handoff
+
+`skills/handoff/SKILL.md`
+
+为后续 Agent 或下一轮会话生成交接文档，并保存到操作系统临时目录，而不是当前仓库。
+
+**能力：**
+
+- 记录目标、当前状态、待办、涉及文件、已运行命令、风险和约束
+- 根据用户指定的下一轮重点调整交接内容
+- 给出建议使用的 skills 及原因
+- 脱敏敏感信息，并避免重复已有 PRD、计划、ADR、Issue、Commit 或 Diff
+
+### 16. Caveman
+
+`skills/caveman/SKILL.md`
+
+在用户明确要求更短、更省 token 的回复时启用超简洁沟通模式，同时保留技术准确性。
+
+**能力：**
+
+- 支持 "caveman mode"、"be brief"、"less tokens"、"回答短点"、"少废话" 等触发方式
+- 触发后持续生效，直到用户要求恢复普通模式
+- 保留精确技术术语、代码、路径、命令和错误信息
+- 当过度简短会隐藏重要警告或影响多步骤理解时，临时恢复完整说明
+
 ## 📦 安装
 
 ### Claude Code
@@ -184,6 +283,15 @@ Fetch and follow instructions from https://raw.githubusercontent.com/HeathWang/h
 - `skills/ios-i18n-workflow/references/naming-conventions.md` - 本地化 Key 命名规范
 - `skills/ios-i18n-workflow/references/advanced-usage.md` - CI/CD 集成与自动化
 - `skills/improve-codebase-analytics/SKILL.md` - 架构分析报告工作流
+- `skills/fetch-yuque-doc/SKILL.md` - 语雀文档获取工作流
+- `skills/fetch-yuque-doc/scripts/fetch_yuque_doc.py` - 语雀页面提取脚本
+- `skills/fetch-yuque-doc/references/browser-notes.md` - 浏览器/Profile 假设与提取说明
+- `skills/diagnose/SKILL.md` - 疑难 Bug 诊断工作流
+- `skills/grill-me/SKILL.md` - 计划与设计压力测试工作流
+- `skills/grill-with-docs/SKILL.md` - 结合领域文档的方案压力测试工作流
+- `skills/to-prd/SKILL.md` - PRD 创建与发布工作流
+- `skills/handoff/SKILL.md` - 会话交接工作流
+- `skills/caveman/SKILL.md` - 简洁沟通模式
 
 ---
 
