@@ -15,6 +15,7 @@ Daily development skills, primarily for frontend development, iOS, H5, and more.
 - **📝 Git Automation**: Intelligent Git commit workflow with automatic message generation
 - **❓ Q&A Workflow**: Comprehensive question and answer system for code guidance
 - **🌍 iOS Internationalization**: Complete iOS localization workflow with SwiftGen L10n support and multi-language management
+- **🏗️ Architecture Analytics**: Durable architecture analysis reports under `docs/Analytics/`
 
 ## 🚀 Skills
 
@@ -115,6 +116,17 @@ Automated iOS internationalization workflow for SwiftGen L10n code generation. S
 - Clean up unused localization entries
 - Generate SwiftGen code after localization updates
 
+### 9. Improve Codebase Analytics
+`skills/improve-codebase-analytics/SKILL.md`
+
+Analyzes codebase architecture for module depth, locality, leverage, seams, adapters, and testability, then writes a durable Markdown report under the analyzed project's `docs/Analytics/` directory.
+
+**Features:**
+- Architecture deepening analysis using consistent module/interface vocabulary
+- Durable Markdown output in `docs/Analytics/YYYY-MM-DD-architecture-analysis.md`
+- Explicit stop condition: no temp HTML, no GitHub issue, no follow-up design loop
+- Incorporates `CONTEXT.md` domain language and ADR constraints when present
+
 ## 📦 Installation
 
 ### Claude Code
@@ -157,6 +169,7 @@ For detailed skill-specific documentation, refer to the individual skill files i
 - `skills/ios-i18n-workflow/scripts/README.md` - Helper scripts usage
 - `skills/ios-i18n-workflow/references/naming-conventions.md` - Localization key naming conventions
 - `skills/ios-i18n-workflow/references/advanced-usage.md` - CI/CD integration and automation
+- `skills/improve-codebase-analytics/SKILL.md` - Architecture analytics report workflow
 
 ---
 
