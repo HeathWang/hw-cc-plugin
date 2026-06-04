@@ -1,102 +1,135 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code and other AI coding agents when working in this repository.
 
 ## Project Overview
 
-This is a **Claude Code plugin** that provides development skills and commands for daily frontend, iOS, and H5 development workflows. The plugin contains reusable command definitions (markdown files) that users can invoke via slash commands in Claude Code.
+`hw-cc-plugin` is a Claude Code plugin and cross-agent skills library for daily development workflows. The repository currently centers on native `skills/` rather than legacy slash-command markdown files.
 
-## Architecture
+The skills cover Git commit automation, code review, bug diagnosis, Java-to-TypeScript/Swift conversion, iOS localization, architecture analysis, PRD/handoff creation, plan stress testing, Yuque document fetching, and concise communication mode.
+
+## Current Architecture
 
 ### Directory Structure
 
-```
+```text
 hw-cc-plugin/
 ├── .claude-plugin/
-│   ├── plugin.json          # Plugin metadata
-│   └── marketplace.json     # Marketplace listing configuration
-├── commands/                # Command definitions (user-invocable via /)
-│   ├── gitcommit.md
-│   ├── code-review-with-files.md
-│   ├── bug-analysis.md
-│   ├── linus-torvalds-code-review.md
-│   ├── Java-to-Nextjs-Conversion.md
-│   ├── java-to-swift-conversion.md
-│   └── question-answer.md
-└── skills/                  # Agent skills (internal workflow automation)
+│   ├── plugin.json              # Claude Code plugin metadata
+│   └── marketplace.json         # Marketplace listing configuration
+├── .codex/
+│   └── INSTALL.md               # Codex native skill installation guide
+├── skills/
+│   ├── <skill-name>/SKILL.md    # Native agent skill definitions
+│   ├── <skill-name>/scripts/    # Optional helper scripts bundled with a skill
+│   ├── <skill-name>/references/ # Optional supporting docs for a skill
+│   └── <skill-name>/agents/     # Optional subagent/runtime config
+├── README.md                    # English user-facing documentation
+├── README.zh-CN.md              # Simplified Chinese documentation
+└── CLAUDE.md                    # Agent-facing repository guidance
 ```
+
+There is no active `commands/` directory in the current project shape. Do not add command files unless intentionally reintroducing legacy command support.
 
 ### Plugin Configuration Files
 
-- **plugin.json**: Defines plugin metadata (name, version, author, repository, keywords)
-- **marketplace.json**: Marketplace listing configuration for plugin discovery
+- `.claude-plugin/plugin.json`: plugin metadata, version, author, repository, license, and keywords.
+- `.claude-plugin/marketplace.json`: marketplace owner metadata and plugin listing.
+- `.codex/INSTALL.md`: installs this repository for Codex by symlinking `skills/` into `~/.agents/skills/hw-cc-plugin`.
 
-### Commands vs Skills
+## Skill Inventory
 
-**Commands** (`commands/*.md`):
-- User-invocable workflows triggered by slash commands (e.g., `/gitcommit`, `/code-review`)
-- Define step-by-step processes for code conversion, review, Git automation
-- Output language varies by command (Chinese for Git commits, code reviews; English for type conversions)
+Primary skills live under `skills/<name>/SKILL.md`:
 
-**Skills** (`skills/*.md`):
-- Internal agent behaviors loaded automatically (e.g., test-driven-development, debugging)
-- Modify how Claude approaches tasks (not directly invoked by users)
+- `git-commit-workflow`: safe sequential Git commit workflow with Chinese Conventional Commit messages.
+- `code-review-with-files`: findings-first code review protocol.
+- `bug-analysis`: root cause analysis for iOS, React, Python, and Java Spring issues.
+- `diagnose`: disciplined workflow for hard bugs and uncertain regressions.
+- `linus-torvalds-review`: opinionated review using simplicity, data-structure, and taste heuristics.
+- `java-to-nextjs`: Java 1.8 to Next.js TypeScript interface conversion.
+- `java-to-swift`: Java 1.8 to Swift Codable struct conversion.
+- `ios-i18n-workflow`: SwiftGen L10n localization workflow with helper scripts.
+- `question-answer`: read-only project Q&A workflow.
+- `improve-codebase-analytics`: architecture analysis report workflow for `docs/Analytics/`.
+- `grill-me`: plan/design stress testing.
+- `grill-with-docs`: stress testing against `CONTEXT.md`, ADRs, glossary, and documented decisions.
+- `to-prd`: convert settled context into a PRD.
+- `handoff`: create continuation notes for future agents outside the repository.
+- `fetch-yuque-doc`: fetch one Yuque document via a local logged-in browser session.
+- `caveman`: ultra-concise communication mode.
 
-## Language Conventions
+Supporting files are part of the shipped skill contract. Keep scripts, reference docs, and agent configs colocated with the skill that owns them.
 
-- **Git commit messages**: Chinese (中文)
-- **Code review outputs**: Simplified Chinese (简体中文)
-- **Type conversion workflows**: English (definitions, rules, examples)
-- **Command documentation**: English (structure, workflow steps)
+## Skill File Conventions
 
-## Plugin Development Guidelines
+Each native skill should use this shape:
 
-### Adding New Commands
-1. Create markdown file in `commands/` directory
-2. Name file using kebab-case (e.g., `new-command.md`)
-3. Include clear workflow steps with sequential execution rules
-4. Specify output language requirements explicitly
-
-### Command File Structure
 ```markdown
-# Command Title
+---
+name: skill-name
+description: Use when ...
+allowed-tools: Read, Grep, Glob # optional; include only when needed by the runtime
+---
 
-## Abstract/Overview
-Brief description of command purpose and scope
+# Skill Title
 
-## Workflow Steps
-### Step 1: Description
-Commands and validation logic
+## Overview
+What the skill does and its most important constraint.
 
-### Step 2: Description
-...
+## When to Use
+Concrete triggers and non-triggers.
 
-## Output Format
-Expected output structure and language
+## Workflow
+Ordered steps the agent must follow.
 
-## Execution Rules
-Decision flow diagrams and key principles
+## Output Rules
+Required output language, format, or stop conditions.
 ```
 
-## Testing Commands
+Guidelines:
 
-To test command changes:
-1. Install plugin in Claude Code: `/plugin` → Add Marketplace → `HeathWang/hw-cc-plugin`
-2. Restart Claude Code
-3. Invoke command via slash (e.g., `/gitcommit`)
-4. Verify workflow execution and output format
+1. Use kebab-case directory names and `SKILL.md` as the entry file.
+2. Put helper scripts in `skills/<skill>/scripts/` and document how to run them.
+3. Put longer background material in `skills/<skill>/references/`; the skill should say when to read it.
+4. Keep instructions operational and testable. Prefer explicit stop conditions over vague guidance.
+5. Preserve hard safety constraints in the skill itself, not only in the README.
 
-## Publishing Updates
+## Language and Output Conventions
 
-After modifying commands:
-1. Update version in `.claude-plugin/plugin.json`
-2. Commit changes with conventional commit format
-3. Push to GitHub repository
-4. Marketplace will automatically reflect changes
+- Git commit messages generated by `git-commit-workflow` must be Chinese Conventional Commits.
+- `code-review-with-files` responds in the language of the current review request and leads with findings.
+- `bug-analysis` is expected to output Chinese root cause analysis and fix recommendations.
+- Java conversion skills output Markdown code blocks only and must not modify project files.
+- Preserve API contract property names during Java-to-TypeScript/Swift conversion. Do not convert snake_case/camelCase unless the source contract does.
+- Existing bilingual README files should stay aligned when user-facing skill lists or installation steps change.
+
+## Development Workflow
+
+When adding or changing a skill:
+
+1. Update `skills/<skill>/SKILL.md` and any colocated `scripts/`, `references/`, or `agents/` files.
+2. Update both `README.md` and `README.zh-CN.md` when the public skill inventory, install flow, or user-facing behavior changes.
+3. Update `.codex/INSTALL.md` when Codex installation, migration, or symlink behavior changes.
+4. Update `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` versions for published plugin releases.
+5. Do not introduce legacy command documentation unless a `commands/` feature is deliberately restored.
+
+## Testing and Verification
+
+Use the smallest verification that matches the change:
+
+- For Markdown-only skill edits, inspect rendered Markdown and verify frontmatter is valid YAML.
+- For helper scripts, run the script help path or a dry-run/safe sample where available.
+- For iOS localization helpers, keep dry-run safety behavior for cleanup workflows.
+- For Yuque fetching, avoid broad crawls; the workflow is intentionally scoped to a single document URL.
+- For Claude Code plugin behavior, install via `/plugin` -> Add Marketplace -> `HeathWang/hw-cc-plugin`, restart Claude Code, then confirm the changed skill is discoverable.
+- For Codex behavior, follow `.codex/INSTALL.md` and confirm `~/.agents/skills/hw-cc-plugin` points to this repository's `skills/` directory.
 
 ## Important Constraints
 
-- **Type conversion commands**: MUST NOT modify project files; output as markdown code blocks only
-- **Code reviews**: Always request source files from user before reviewing
-- **Git workflow**: Follow sequential execution (no parallel git commands)
-- **Property naming**: Preserve API contract naming in conversions (do not convert naming styles)
+- Protect user work: do not reset, unstage, or regroup existing Git changes unless explicitly asked.
+- Never stage likely secrets in the Git workflow, even when the user asks to commit everything.
+- Git commit workflow steps are sequential; do not run parallel Git commands for staging/commit/recovery.
+- Type conversion skills are read-only by design and must output definitions as Markdown code blocks only.
+- Code review should focus on correctness, regressions, security, performance, edge cases, and missing tests before style.
+- Architecture analytics writes reports under the analyzed project's `docs/Analytics/` and does not create GitHub issues or PRs.
+- Handoff documents are saved outside the repository in the OS temporary directory.
