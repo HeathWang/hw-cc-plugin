@@ -141,7 +141,7 @@
 **能力：**
 
 - 使用统一模块和接口词汇进行架构深化分析
-- 在 `docs/Analytics/YYYY-MM-DD-architecture-analysis.md` 生成报告
+- 在 `docs/Analytics/YYYY-MM-DD-architecture-<UpperCamelCaseTopic>.md` 生成报告
 - 明确停止条件：不生成临时 HTML，不创建 GitHub Issue，不进入额外设计循环
 - 可结合 `CONTEXT.md` 领域语言和 ADR 约束
 
@@ -225,6 +225,7 @@
 - 记录目标、当前状态、待办、涉及文件、已运行命令、风险和约束
 - 根据用户指定的下一轮重点调整交接内容
 - 给出建议使用的 skills 及原因
+- 使用便于复制的代码块返回文件绝对路径
 - 脱敏敏感信息，并避免重复已有 PRD、计划、ADR、Issue、Commit 或 Diff
 
 ### 16. Caveman

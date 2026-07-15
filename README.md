@@ -129,7 +129,7 @@ Analyzes codebase architecture for module depth, locality, leverage, seams, adap
 
 **Features:**
 - Architecture deepening analysis using consistent module/interface vocabulary
-- Durable Markdown output in `docs/Analytics/YYYY-MM-DD-architecture-analysis.md`
+- Durable Markdown output in `docs/Analytics/YYYY-MM-DD-architecture-<UpperCamelCaseTopic>.md`
 - Explicit stop condition: no temp HTML, no GitHub issue, no follow-up design loop
 - Incorporates `CONTEXT.md` domain language and ADR constraints when present
 
@@ -201,6 +201,7 @@ Creates a continuation document for a future agent or session, saved outside the
 - Captures objective, current status, pending work, touched files, commands, risks, and constraints
 - Tailors the handoff to the user's requested next-session focus
 - Includes suggested skills for the next agent with reasons
+- Returns the absolute saved path in a copyable code block
 - Redacts secrets and avoids duplicating existing PRDs, plans, ADRs, issues, commits, or diffs
 
 ### 16. Caveman
