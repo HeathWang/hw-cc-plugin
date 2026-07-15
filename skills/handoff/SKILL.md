@@ -44,6 +44,21 @@ Redact sensitive information, including API keys, passwords, tokens, credentials
 
 If the user passed arguments, treat them as the next-session focus and tailor the document accordingly.
 
+## Final Response
+
+After successfully saving the handoff, reply with exactly:
+
+1. One brief confirmation in the user's language.
+2. A fenced `text` code block containing only the absolute saved path.
+
+Example:
+
+```text
+/tmp/handoff-20260715-1713.md
+```
+
+The code block is the copyable file information. Keep labels, bullets, and other metadata outside it.
+
 ## Common Mistakes
 
 - Do not save the handoff inside the current repository.
