@@ -126,7 +126,9 @@ Side effects during the grilling loop:
 
 After exploration and the grilling loop, create `docs/Analytics/` under the analyzed project root if missing.
 
-Write `docs/Analytics/YYYY-MM-DD-architecture-analysis.md`. If that path exists, use `YYYY-MM-DD-HHMMSS-architecture-analysis.md`, then append `-2`, `-3`, etc. if needed.
+Derive a concise report topic from the selected candidate or non-interactive focus area. Use UpperCamelCase, 2-4 meaningful English words, and project/domain vocabulary when available: `AnalyticsLifecycle`, `CheckoutOrchestration`, `PaymentAdapter`. Do not use generic topics such as `Analysis`, `ArchitectureAnalysis`, or a timestamp. If no clear topic can be inferred, ask the user for a short topic name before writing.
+
+Write `docs/Analytics/YYYY-MM-DD-architecture-<Topic>.md`, for example `docs/Analytics/2026-06-04-architecture-AnalyticsLifecycle.md`. If that exact path exists, append `-2`, `-3`, etc. before `.md`; do not fall back to timestamped `architecture-analysis` names.
 
 Write in the user's language. Include concrete paths, evidence, the selected candidate, decisions from the grilling loop, and the recommended first slice.
 
@@ -198,7 +200,7 @@ If the user explicitly requests a non-interactive report, include all candidates
 
 | Situation | Required action |
 |-----------|-----------------|
-| User asks for architecture analysis or improvement opportunities | Explore first, present candidates, ask which to explore, then write `docs/Analytics/YYYY-MM-DD-architecture-analysis.md` |
+| User asks for architecture analysis or improvement opportunities | Explore first, present candidates, ask which to explore, then write `docs/Analytics/YYYY-MM-DD-architecture-<UpperCamelCaseTopic>.md` |
 | User names a focus area | Use it as the exploration focus; do not ask an extra pre-scope question |
 | User does not name a focus area in a non-trivial project | Ask which area to prioritize before deep exploration |
 | Codebase has independent areas to inspect | Launch parallel subagents for the exploration tracks |
@@ -224,7 +226,7 @@ Which of these would you like to explore?
 After the user picks one candidate and the grilling loop completes:
 
 ```text
-Created docs/Analytics/2026-05-27-architecture-analysis.md for the checkout orchestration candidate.
+Created docs/Analytics/2026-05-27-architecture-CheckoutOrchestration.md for the checkout orchestration candidate.
 ```
 
 ## Common Mistakes and Rationalizations
@@ -236,6 +238,7 @@ Created docs/Analytics/2026-05-27-architecture-analysis.md for the checkout orch
 | Not asking what to explore | The user should choose the candidate before the final report unless they requested non-interactive output. |
 | Inventing candidates to fill the template | If evidence does not support a candidate, say no material candidate was found. |
 | Answering only in chat after write-enabled analysis | Baseline agents do this; it loses the durable report. |
+| Using timestamped `architecture-analysis` names for same-day reports | Same-day reports should be distinguished by the UpperCamelCase analysis topic. |
 | Creating a GitHub issue for tracking | Create issues only in a separate user request. |
 | Editing `CONTEXT.md` or ADRs during analysis | Recommend follow-ups; edit them only after explicit user approval. |
 | Exposing internal seams for tests | Test through the external interface; keep internal seams private. |
@@ -246,6 +249,7 @@ Created docs/Analytics/2026-05-27-architecture-analysis.md for the checkout orch
 - You are about to skip parallel subagents even though the codebase has independent areas to inspect.
 - You are about to send only one unchallenged candidate without evidence.
 - You are about to skip asking "Which of these would you like to explore?" after candidate synthesis.
+- You are about to write a generic or timestamped `architecture-analysis` filename instead of a topic-specific UpperCamelCase filename.
 - You are about to create or draft a GitHub issue.
 - You are about to edit `CONTEXT.md` or ADRs without an explicit request.
 - You are about to invent weak candidates because the template has a `Candidates` section.
