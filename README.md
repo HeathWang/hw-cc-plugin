@@ -96,13 +96,13 @@ Converts Java 1.8 classes to Swift 5.0+ struct objects with Codable conformance.
 ### 7. Question & Answer
 `skills/question-answer/SKILL.md`
 
-Provides comprehensive Q&A workflow with full read access to project files and detailed technical guidance.
+Provides evidence-based, read-only answers about existing code. Mixed requests that also require changes are handled by the appropriate change workflow.
 
 **Features:**
-- Read-only file access for code analysis
-- Systematic problem-solving approach
-- Structured response format
-- Educational and advisory focus
+- Targeted inspection of relevant code, configuration, tests, and dependencies
+- Clear separation of observed facts, inference, and unknowns
+- Response depth and format matched to the user's request
+- Read-only behavior scoped to pure explanation and guidance requests
 
 ### 8. iOS Internationalization Workflow
 `skills/ios-i18n-workflow/SKILL.md`

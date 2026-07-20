@@ -1,51 +1,63 @@
 ---
 name: question-answer
-description: Use when answering technical questions about a codebase - reading and analyzing project files to provide comprehensive, accurate guidance without modifying any files. Triggered by "explain", "how does X work", "why does X happen", or any question about code behavior or architecture.
+description: Use when the user wants a read-only explanation of existing code behavior, architecture, control flow, data flow, dependencies, or implementation decisions and has not requested project changes.
 allowed-tools: Read, Grep, Glob, WebFetch, WebSearch
 ---
 
-# Question & Answer Workflow
+# Codebase Question Answering
 
 ## Overview
 
-Read-only technical Q&A for codebase questions. Analyze code, explain concepts, and provide actionable guidance without modifying project files. Respond in the user's language.
+Answer codebase questions from evidence rather than assumptions. Stay read-only while this skill applies, respond in the user's language, and match the requested depth and format.
 
-## Core Constraints
+## Scope
 
-- **NEVER modify, edit, or alter any project files** — informational and advisory only
-- Full read access to all project files — analyze freely
-- Respond in the user's language (Chinese question → Chinese response)
+Use this skill for requests to explain:
 
-## When to Use
+- Code behavior, control flow, or data flow
+- Architecture, dependencies, or implementation decisions
+- How an existing feature or subsystem works
 
-- User invokes `/question-answer` or asks a technical question about the codebase
-- Need to explain code behavior, architecture, or implementation decisions
-- User wants analysis or guidance without code changes
+This skill does not apply when any requested outcome includes:
 
-## Process
+- Editing, adding, deleting, or generating project files
+- Implementing a feature or fix
+- Running commands that mutate project or external state
+- Reviewing a change for defects
+- Diagnosing an uncertain bug, crash, or regression
 
-1. **Understand the Question** — restate to confirm understanding
-2. **Analyze Context** — read relevant source files, configs, dependencies
-3. **Research Solution** — consider best practices and existing patterns in the codebase
-4. **Formulate Response** — structure a comprehensive answer
-5. **Quality Check** — ensure accuracy and completeness
-6. **Deliver** — clear, actionable guidance
+For a mixed request such as “explain this and fix it,” use the appropriate change workflow and satisfy both outcomes. Do not let this skill's read-only constraint override an explicit change request.
 
-## Response Structure
+## Workflow
 
-1. **Problem Understanding** — restate the question clearly
-2. **Context Analysis** — current codebase state relevant to the question
-3. **Solution Explanation** — detailed explanation with reasoning
-4. **Implementation Guidance** — step-by-step guidance (reference only, no file changes)
-5. **Considerations** — potential issues, alternatives, trade-offs
+1. Identify the exact question and requested level of detail.
+2. Inspect the smallest relevant code slice: definitions, callers, configuration, tests, and dependencies as needed.
+3. Trace the behavior from concrete evidence. Separate observed facts from inference.
+4. Use external documentation only when the answer depends on an external API, version, or current behavior.
+5. If evidence is insufficient, state what is unknown and what would need inspection; do not guess.
 
-## Quality Standards
+## Answer Contract
 
-- Accurate technical information
-- Reference official documentation when applicable
-- Include performance and memory considerations where relevant
-- Use clear, professional language
-- Structure information hierarchically
-- Provide code examples for reference (not to be applied directly)
-- Explain reasoning behind recommendations
-- Maintain consistency with existing project patterns
+Shape the response in this order:
+
+1. Direct answer or conclusion
+2. Relevant code evidence, including file and symbol references when available
+3. Reasoning that connects the evidence to the conclusion
+4. Caveats, trade-offs, or next steps only when they help answer the question
+
+Honor explicit length and format requests. A simple question may need one sentence; use sections only when they improve clarity.
+
+## Quick Reference
+
+- **Facts:** Supported directly by inspected code, configuration, tests, or documentation
+- **Inference:** Label it and explain the evidence behind it
+- **Unknown:** State the missing evidence instead of presenting a guess as fact
+- **Read-only:** Do not modify files or mutate state while this skill applies
+
+## Common Mistakes
+
+- **Using this skill for a mixed change request:** Switch to the appropriate change workflow.
+- **Restating before answering:** Lead with the answer unless clarification is required.
+- **Reading the whole repository:** Start with the narrowest relevant path and expand only when evidence requires it.
+- **Replacing repository evidence with generic best practices:** Explain the current code first; add external guidance only when relevant.
+- **Forcing a fixed template:** Match the response shape to the question.
