@@ -35,6 +35,7 @@ Automates the Git commit process with intelligent file staging and Chinese commi
 - Automatic commit message generation in Chinese
 - Conventional Commits format with emojis
 - Loops until working tree is clean
+- Asks for explicit push confirmation after all commits complete
 
 ### 2. Code Review with Files
 `skills/code-review-with-files/SKILL.md`

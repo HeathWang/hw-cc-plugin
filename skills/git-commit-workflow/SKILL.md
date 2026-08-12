@@ -7,9 +7,9 @@ description: Use when committing git changes, especially when staged files alrea
 
 ## Overview
 
-Sequential git commit workflow that preserves user-prepared staged changes for the current round, safely screens files before staging, groups the rest into logical commits, generates Chinese Conventional Commit messages, and loops until the working tree is clean unless the user explicitly asks to stop.
+Sequential git commit workflow that preserves user-prepared staged changes for the current round, safely screens files before staging, groups the rest into logical commits, generates Chinese Conventional Commit messages, loops until the working tree is clean unless the user explicitly asks to stop, and then offers an explicit choice to push.
 
-**Core principle:** If files are already staged, the current staged set is the commit unit for this round. If `git status` still shows any remaining changes after a commit, the workflow is not complete yet unless the user explicitly says to stop. Safety overrides speed: never stage likely secrets, and never add extra commit metadata, trailers, or attribution unless the user explicitly requests them.
+**Core principle:** If files are already staged, the current staged set is the commit unit for this round. If `git status` still shows any remaining changes after a commit, the workflow is not complete yet unless the user explicitly says to stop. Safety overrides speed: never stage likely secrets, and never add extra commit metadata, trailers, or attribution unless the user explicitly requests them. Pushing is a separate remote write and requires the user's explicit structured choice after all commits are complete.
 
 ## When to Use
 
@@ -111,12 +111,14 @@ feat(user): 重构用户数据模型和视图 (3个文件)
 
 After each commit, run `git status` again.
 
-- **No remaining staged / unstaged / untracked changes** → workflow complete 🎉
+- **No remaining staged / unstaged / untracked changes** → continue to Step 5
 - **Any remaining staged / unstaged / untracked changes** → you must repeat from Step 2 for the next logical group
 
-Do **not** treat "the first commit succeeded" as completion. The workflow only ends when `git status` shows no remaining changes, or when the user explicitly tells you to stop after the current round.
+Do **not** treat "the first commit succeeded" as completion. The commit loop only ends when `git status` shows no remaining changes, or when the user explicitly tells you to stop after the current round.
 
 Natural-language stop instructions such as "剩下的改动之后再说", "先提交这一轮", "先到这里", or "其他改动下次再处理" count as explicit instructions to stop after the current round.
+
+If the user explicitly stops while changes remain, report the remaining changes and end the workflow without entering Step 5.
 
 If the first round used user-prepared staged files and `git status` still shows other changes afterward, continue with a new round:
 1. Re-check whether anything is currently staged
@@ -124,6 +126,41 @@ If the first round used user-prepared staged files and `git status` still shows 
 3. Review with `git diff --cached`
 4. Commit
 5. Run `git status` again
+
+### Step 5: Ask Whether to Push
+
+Enter this step only after the final `git status` confirms there are no staged, unstaged, or untracked changes.
+
+Use the runtime's structured question/choice tool (for example, `AskQuestion` or `AskUserQuestion`) and wait for the answer:
+
+- Question: `所有提交已完成，是否现在推送到远端？`
+- Option 1: `是，推送`
+- Option 2: `否，暂不推送`
+
+This choice is a required part of the completion response. Do not replace it with an open-ended sentence such as “需要我 push 吗？”.
+
+**If the user selects `否，暂不推送`:**
+- Do not run any push command
+- Report that all commits remain local
+
+**If the user selects `是，推送`:**
+1. Run `git branch --show-current` and wait for the result
+2. If the result is empty, report that detached HEAD prevents a safe automatic push; do not invent a refspec
+3. Run `git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}'` and wait for the result
+4. If an upstream exists, run `git push`
+5. If no upstream exists, run `git remote`, then use another structured choice to select a remote or cancel
+6. After a remote is selected, run `git push -u <selected-remote> HEAD`
+7. Report the push result; if it fails, stop and show the error without retrying with force
+
+Never use `--force`, `--force-with-lease`, or guess a remote. Even when only one remote exists, present it as a structured choice together with a cancel option before setting upstream.
+
+#### Push Choice Example
+
+```text
+所有提交已完成，是否现在推送到远端？
+○ 是，推送
+○ 否，暂不推送
+```
 
 ## Key Principles
 
@@ -140,6 +177,8 @@ If the first round used user-prepared staged files and `git status` still shows 
 | HEREDOC commit messages | Use a HEREDOC so multi-line Chinese commit messages are passed safely |
 | Failed commit recovery | If hooks modify files after a failed commit, retry the same commit unit before touching unrelated changes |
 | Keep looping until clean | A successful commit is only one round; continue until `git status` is clean or the user says stop |
+| Structured push consent | After a clean final status, always ask once with selectable push / do-not-push options |
+| No remote guessing | Without an upstream, let the user select a remote before running `git push -u <remote> HEAD` |
 
 ## Quick Reference
 
@@ -155,6 +194,10 @@ If the first round used user-prepared staged files and `git status` still shows 
 | Commit succeeded but changes remain | Run `git status` and continue the next round |
 | User did not request extra metadata | Use a plain commit command and message only; do not add trailers, signoffs, or attribution markers |
 | User explicitly says stop after this round | Stop after the current round and report remaining changes |
+| Final `git status` is clean | Ask once with structured options whether to push |
+| User declines push | End without running a push command |
+| User accepts push and upstream exists | Run `git push` |
+| User accepts push but no upstream exists | Ask the user to select a remote or cancel, then use `git push -u <remote> HEAD` |
 
 ## Common Mistakes
 
@@ -174,6 +217,10 @@ If the first round used user-prepared staged files and `git status` still shows 
   **Fix:** Recover the failed commit unit first: inspect, restage only hook-mutated files from that unit, and retry.
 - **Mistake:** Adding `--trailer "Made-with: Cursor"` or any similar metadata because it feels harmless or convenient
   **Fix:** Do not add commit trailers, signoffs, attribution lines, or source markers unless the user explicitly requests them.
+- **Mistake:** Reporting completion immediately after the final clean `git status`
+  **Fix:** Present the required structured push choice and wait for the user's selection.
+- **Mistake:** Automatically choosing `origin` when the branch has no upstream
+  **Fix:** Ask the user to select a remote or cancel before setting upstream and pushing.
 
 ## Rationalization Traps
 
@@ -189,6 +236,8 @@ If the first round used user-prepared staged files and `git status` still shows 
 | "I can infer hook ownership from memory after the failure." | No. Remember the staged file list and pre-existing unstaged/untracked files before committing so recovery is based on the actual commit unit. |
 | "The example says `git commit -m`, so shell newlines are probably fine." | No. Use a HEREDOC for multi-line messages to avoid quoting and formatting mistakes. |
 | "Adding `--trailer \"Made-with: Cursor\"` is fine because it does not change the code." | No. Unrequested commit metadata is still an unauthorized change to the commit content. Do not add it unless the user explicitly asks. |
+| "The commits are done, so a completion message is enough." | No. A clean final status transitions to the required structured push choice. |
+| "There is only one remote, so choosing it automatically is harmless." | No. Setting upstream changes future push behavior; present the remote and a cancel option for explicit selection. |
 
 ## Red Flags
 
@@ -204,5 +253,8 @@ If the first round used user-prepared staged files and `git status` still shows 
 - `git commit` failed and you cannot prove a modified file belongs to the failed staged set
 - You are about to add `--trailer`, `--signoff`, attribution lines, or any `Made-with: Cursor`-style marker that the user did not explicitly request
 - You notice unrequested attribution or trailer text being injected by hooks, templates, editor content, or local git configuration
+- Final `git status` is clean and you are about to finish without presenting the structured push choice
+- The user accepted push, no upstream exists, and you are about to choose a remote without another structured selection
+- A normal push failed and you are considering a force push or an automatic retry with different arguments
 
 **If any red flag appears, stop and return to the workflow rules above.**

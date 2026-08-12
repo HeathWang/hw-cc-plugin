@@ -37,6 +37,7 @@
 - 自动生成中文提交信息
 - 遵循 Conventional Commits 格式并支持 emoji
 - 持续处理直到工作区清理完成
+- 所有提交完成后通过问题选择确认是否推送到远端
 
 ### 2. Code Review with Files
 
