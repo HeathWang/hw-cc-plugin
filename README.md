@@ -18,8 +18,7 @@ Daily development skills, primarily for frontend development, iOS, H5, and more.
 - **❓ Q&A Workflow**: Comprehensive question and answer system for code guidance
 - **🌍 iOS Internationalization**: Complete iOS localization workflow with SwiftGen L10n support and multi-language management
 - **🏗️ Architecture Analytics**: Durable architecture analysis reports under `docs/Analytics/`
-- **📄 PRD & Handoff Workflows**: Convert settled context into PRDs and continuation notes for future agents
-- **🧠 Plan Stress Testing**: Grill technical plans against code, glossary terms, ADRs, and documented decisions
+- **📄 PRD Workflow**: Convert settled context into PRDs
 - **🔗 Yuque Document Fetching**: Fetch a single Yuque page through a local logged-in browser session
 - **⚡ Communication Modes**: Token-efficient concise responses for users who explicitly request brevity
 
@@ -158,30 +157,7 @@ Provides a disciplined workflow for hard bugs, intermittent failures, production
 - Guides targeted debugging probes, regression tests, and original-scenario verification
 - Includes cleanup and post-mortem checks before declaring the bug fixed
 
-### 12. Grill Me
-`skills/grill-me/SKILL.md`
-
-Stress-tests a plan, design, architecture, or technical proposal by walking decision branches one question at a time until shared understanding is reached.
-
-**Features:**
-- Challenges plans through sequential, focused questions
-- Provides a recommended answer or default position with each question
-- Explores the codebase instead of asking when repository evidence can answer
-- Summarizes the agreed direction, remaining risks, and unresolved questions
-
-### 13. Grill with Docs
-`skills/grill-with-docs/SKILL.md`
-
-Stress-tests plans against a project's domain language, glossary, `CONTEXT.md`, ADRs, documented decisions, code behavior, and overloaded terminology.
-
-**Features:**
-- Performs a bounded pass over context docs, ADRs, and obvious code terminology
-- Calls out conflicts between proposed terms and existing glossary language
-- Uses concrete scenarios to clarify domain boundaries and edge cases
-- Updates `CONTEXT.md` inline when terms are resolved, or states the exact update when edits are unavailable
-- Offers ADRs only for hard-to-reverse, surprising, trade-off-driven decisions
-
-### 14. To PRD
+### 12. To PRD
 `skills/to-prd/SKILL.md`
 
 Turns current conversation context and codebase understanding into a PRD, especially after requirements, implementation decisions, or product scope have already been discussed.
@@ -193,19 +169,7 @@ Turns current conversation context and codebase understanding into a PRD, especi
 - Uses a structured PRD template covering problem, solution, user stories, decisions, testing, scope, and notes
 - Publishes only when required project setup and triage labels can be confirmed
 
-### 15. Handoff
-`skills/handoff/SKILL.md`
-
-Creates a continuation document for a future agent or session, saved outside the repository in the OS temporary directory.
-
-**Features:**
-- Captures objective, current status, pending work, touched files, commands, risks, and constraints
-- Tailors the handoff to the user's requested next-session focus
-- Includes suggested skills for the next agent with reasons
-- Returns the absolute saved path in a copyable code block
-- Redacts secrets and avoids duplicating existing PRDs, plans, ADRs, issues, commits, or diffs
-
-### 16. Caveman
+### 13. Caveman
 `skills/caveman/SKILL.md`
 
 Enables an ultra-concise communication mode for users who explicitly request shorter, token-efficient replies while preserving technical accuracy.
@@ -263,10 +227,7 @@ For detailed skill-specific documentation, refer to the individual skill files i
 - `skills/fetch-yuque-doc/scripts/fetch_yuque_doc.py` - Yuque page extraction script
 - `skills/fetch-yuque-doc/references/browser-notes.md` - Browser/profile assumptions and extraction notes
 - `skills/diagnose/SKILL.md` - Hard-bug diagnosis workflow
-- `skills/grill-me/SKILL.md` - Plan and design stress-testing workflow
-- `skills/grill-with-docs/SKILL.md` - Domain-doc-aware plan stress-testing workflow
 - `skills/to-prd/SKILL.md` - PRD creation and publishing workflow
-- `skills/handoff/SKILL.md` - Session handoff workflow
 - `skills/caveman/SKILL.md` - Concise communication mode
 
 ---

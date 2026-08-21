@@ -6,7 +6,7 @@ This file provides guidance to Claude Code and other AI coding agents when worki
 
 `hw-cc-plugin` is a Claude Code plugin and cross-agent skills library for daily development workflows. The repository currently centers on native `skills/` rather than legacy slash-command markdown files.
 
-The skills cover Git commit automation, code review, bug diagnosis, Java-to-TypeScript/Swift conversion, iOS localization, architecture analysis, PRD/handoff creation, plan stress testing, Yuque document fetching, and concise communication mode.
+The skills cover Git commit automation, code review, bug diagnosis, Java-to-TypeScript/Swift conversion, iOS localization, architecture analysis, PRD creation, Yuque document fetching, and concise communication mode. Skills that already exist in `mattpocock/skills` live under `notused/` instead of the active inventory.
 
 ## Current Architecture
 
@@ -24,6 +24,7 @@ hw-cc-plugin/
 │   ├── <skill-name>/scripts/    # Optional helper scripts bundled with a skill
 │   ├── <skill-name>/references/ # Optional supporting docs for a skill
 │   └── <skill-name>/agents/     # Optional subagent/runtime config
+├── notused/                     # Archived copies that also exist in mattpocock/skills
 ├── README.md                    # English user-facing documentation
 ├── README.zh-CN.md              # Simplified Chinese documentation
 └── CLAUDE.md                    # Agent-facing repository guidance
@@ -51,10 +52,7 @@ Primary skills live under `skills/<name>/SKILL.md`:
 - `ios-i18n-workflow`: SwiftGen L10n localization workflow with helper scripts.
 - `question-answer`: read-only project Q&A workflow.
 - `improve-codebase-analytics`: architecture analysis report workflow for `docs/Analytics/`.
-- `grill-me`: plan/design stress testing.
-- `grill-with-docs`: stress testing against `CONTEXT.md`, ADRs, glossary, and documented decisions.
 - `to-prd`: convert settled context into a PRD.
-- `handoff`: create continuation notes for future agents outside the repository.
 - `fetch-yuque-doc`: fetch one Yuque document via a local logged-in browser session.
 - `caveman`: ultra-concise communication mode.
 
@@ -132,4 +130,3 @@ Use the smallest verification that matches the change:
 - Type conversion skills are read-only by design and must output definitions as Markdown code blocks only.
 - Code review should focus on correctness, regressions, security, performance, edge cases, and missing tests before style.
 - Architecture analytics writes reports under the analyzed project's `docs/Analytics/` and does not create GitHub issues or PRs.
-- Handoff documents are saved outside the repository in the OS temporary directory.

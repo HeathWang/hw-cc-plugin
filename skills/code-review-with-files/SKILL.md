@@ -7,82 +7,68 @@ description: Use when reviewing source files, diffs, commits, pull requests, or 
 
 ## Overview
 
-This skill defines a findings-first code review protocol, not a generic commentary style.
+This skill defines a findings-first, read-only code review protocol.
 
-Core principles:
-- Report findings before summaries.
-- Prioritize correctness and regression risk before style.
-- Tie conclusions to concrete evidence whenever possible: file, line, contract, call path, or runtime consequence.
-- Read missing context before making claims.
-- Match the language of the current review request first. Use broader thread context only as a secondary signal.
+Inspect the complete review boundary, then report every actionable issue supported by evidence. Prioritize correctness, security, regressions, and runtime risk over style.
 
 ## When to Use
 
-- The user asks for a review, code review, PR review, patch review, or diff review.
-- The user provides source files, commits, patches, branches, or a readable workspace.
-- The goal is to identify bugs, regressions, security issues, performance risks, edge cases, or missing tests.
+- The user asks to review source files, a diff, commit, branch, pull request, or bug fix.
+- The goal is to find correctness, regression, security, performance, edge-case, or test problems.
 
-Do not use this skill for:
-- Pure code explanation without issue-finding
-- Pure rewriting or wording cleanup
-- Style-only commentary when behavioral correctness is out of scope
+Do not use it for pure explanation, rewriting, or style-only feedback.
 
-## Review Standard
+## Scope and Safety
 
-The primary goal is to find:
+Identify the target and baseline first. Inspect the entire supplied file or patch. For a commit, branch, or pull request, compare the intended base to the complete head change, not only the latest commit. Honor explicit scope and exclusions.
 
-| Dimension | What to look for |
-|------|----------|
-| Correctness | Logic bugs, missing branches, inconsistent state, contract violations |
-| Regression Risk | Broken old behavior, compatibility issues, caller assumption mismatches |
-| Security | Injection, auth mistakes, data exposure, missing validation |
-| Performance | Obvious time or space waste, unbounded growth, hot-path regressions |
-| Concurrency / Lifecycle | Races, double-release, leaks, cancellation or retry mistakes |
-| Edge Cases | Null, zero, empty input, boundary values, failure paths |
-| Tests | Missing coverage, weak assertions, uncovered regression cases |
+A change finding must be introduced, worsened, or made newly reachable by the review target. Do not misattribute pre-existing defects; report only an immediate critical one separately as a **Pre-existing Risk**.
 
-Priority order:
-1. Issues that can cause wrong behavior, crashes, data loss, or security problems
-2. Issues that create likely regressions or obvious performance degradation
-3. Maintainability, testability, and design issues
-4. Pure style or subjective preference
+Review is read-only unless changes are separately requested:
+- Do not edit, stage, unstage, reset, or regroup files.
+- Run only safe, targeted checks that materially improve confidence.
+- Inspect the full requested boundary rather than stopping at the first issue.
 
-## Context Gathering
+Read callers, contracts, types, schemas, configuration, lifecycle code, and the original bug path only when a conclusion depends on them. Read relevant existing tests early enough to establish intent, but reconcile them with contracts and callers rather than treating them as automatic truth.
 
-Identify the review target first:
-- Single file
-- Multi-file change
-- Git diff, patch, or commit
-- A feature or fix in the local repository
-
-If the required context is available in the workspace, read it before asking the user for more files.
-
-You must gather more context before concluding when:
-- The code calls an unknown function, method, interface, or base type
-- The change touches shared state, cache, concurrency, transactions, or lifecycle logic
-- The review is for a bug fix, but the original buggy path has not been checked
-- Behavior depends on config, schema, type definitions, protocol fields, or environment variables
-
-If critical context is still missing:
-- State exactly what is missing
-- State what cannot be confirmed because of that gap
-- Report only issues supported by the available evidence
+If critical context is unavailable, state what is missing and what cannot be confirmed. Report only supported conclusions.
 
 ## Review Workflow
 
-1. Define the change boundary.
-   Identify affected entry points, callers, data structures, and tests.
+1. Define the boundary: changed behavior, entry points, callers, data structures, contracts, and tests.
+2. Establish intended behavior from code, types, documentation, callers, and relevant existing tests.
+3. Walk execution paths: inputs, state transitions, errors, returns, side effects, cleanup, and rollback.
+4. Check cross-cutting risks: security, concurrency, resources, performance, compatibility, and observability.
+5. Evaluate test coverage after understanding the implementation: happy path, failure path, edge cases, and regression proof.
+6. Complete the full boundary pass. Consolidate repeated manifestations of one root cause instead of duplicating findings.
 
-2. Review behavior.
-   Walk execution paths for input handling, state transitions, errors, return values, side effects, and rollback paths.
+Do not perform a mechanical line-by-line nitpick pass. Focus on behavior that can actually break.
 
-3. Review cross-cutting concerns.
-   Check concurrency, security, resource handling, performance, compatibility, and observability.
+Subjective style is not a finding unless the user explicitly requests style feedback or it creates a concrete maintenance risk.
 
-4. Review tests last.
-   Verify the happy path, failure path, edge cases, and regression coverage for the current change.
+## Finding Threshold
 
-Do not perform a mechanical line-by-line nitpick pass. Focus on what can actually break.
+A finding must be:
+- **Attributable:** caused, worsened, or exposed by the target
+- **Verifiable:** identifies a trigger, violated contract, call path, or failure
+- **Consequential:** explains the user, system, security, or maintenance impact
+- **Actionable:** gives a realistic fix direction
+- **Atomic:** covers one root cause; combine duplicate instances with the same fix
+
+Resolve assumptions from available context before reporting. If missing evidence can materially change the judgment, use an open question instead of inventing a finding.
+
+## Severity and Merge Readiness
+
+Use impact, likelihood, blast radius, and recoverability. Defect type alone never determines severity: crashes, security issues, and performance problems can occur at any level.
+
+| Label | When to use it |
+|------|----------|
+| critical | Reachable data loss, corruption, broad outage, exploitable boundary failure, or severe unrecoverable results |
+| high | Likely regression or security failure on a supported/common path with important impact |
+| medium | Conditional or limited incorrect behavior, material maintenance risk, weak regression proof, or bounded degradation |
+| low | Localized low-impact issue or optional polish with a concrete benefit |
+
+Unless project policy says otherwise, critical and high findings block merge; medium and low findings do not. Do not raise severity merely because evidence is uncertain or lower it because the fix is easy.
 
 ## Output Contract
 
@@ -91,45 +77,29 @@ Use a findings-first structure by default unless the user explicitly asks for an
 ```markdown
 **Findings**
 1. [severity] [path:line] Conclusion
-   Why this is a problem
-   Likely impact
-   Suggested fix direction
+   Trigger/evidence and impact
+   Fix direction
 
 2. ...
 
-**Open Questions**
-- Only include questions that materially affect the judgment and cannot yet be resolved from evidence
+**Pre-existing Risks** (optional)
+
+**Open Questions** (optional)
 
 **Summary**
-- 1-3 sentences on overall risk, merge readiness, and remaining testing gaps
+Overall risk, merge readiness, tests run, and testing gaps
 ```
 
 Requirements:
 - Sort findings by severity, then by impact and confidence within the same severity
-- Include file and line references whenever possible; if an exact line is unavailable, give the file and enough locating context
-- Explain why the issue matters, not just what line looks suspicious
-- Suggest fix direction without pretending the root cause is proven when evidence is incomplete
-- Write in the language of the most recent user request for this review. If the current request is in English, respond in English even if earlier conversation was in another language.
-- If no issue is found, explicitly say no blocking issues were found and note residual risk or testing blind spots
+- Include a location, trigger/evidence, impact, and fix direction; use locating context if no exact line is available
+- Suggest rather than implement fixes unless the user asks
+- Omit empty **Pre-existing Risks** and **Open Questions** sections
+- Use the language of the most recent review request
+- With zero findings, say **No actionable findings found** and note residual risk or testing gaps
+- With only non-blocking findings, say **No blocking findings** only in the summary
 
-## Severity Guide
-
-| Label | When to use it |
-|------|----------|
-| critical | Crashes, data corruption, security vulnerabilities, severely incorrect results |
-| high | Likely wrong behavior, clear regressions, important feature failure |
-| medium | Maintainability issues, missing edge handling, weak tests, performance risk |
-| low | Style, naming, small redundancies, optional polish |
-
-## Writing Findings
-
-A good finding is:
-- Verifiable: it points to a concrete location and failure condition
-- Consequential: it explains who or what is affected
-- Specific: it avoids vague phrasing like "should optimize" or "might be an issue" without evidence
-- Atomic: one finding per issue, not multiple unrelated concerns merged together
-
-Recommended pattern:
+Example:
 
 ```markdown
 1. [high] `foo/bar.ts:87`
@@ -140,20 +110,15 @@ Recommended pattern:
 
 ## Common Mistakes
 
-| Bad practice | Why it fails | Better approach |
-|---------|------------|----------|
-| Start with a broad overview and hide the real issues later | The user needs blocking issues first | Put findings first and summarize later |
-| Conclude without reading dependencies or callers | It leads to false positives and false confidence | Read the minimum required context first |
-| Say "this is bad" without consequence | It is not actionable | Explain trigger condition and impact |
-| Lead with style issues | Noise obscures real risk | Put correctness first |
-| Follow the thread's older language instead of the current review request | The review comes back in the wrong language | Use the most recent review request as the primary language signal |
-| Say only "LGTM" when nothing obvious is wrong | It provides almost no value | State that no blocking issue was found and note testing gaps |
-| Invent issues to sound thorough | It destroys trust | Use open questions when evidence is incomplete |
+- Reporting an unchanged defect as if the reviewed change introduced it
+- Assigning severity from labels such as "crash" without calibrating realistic impact
+- Finalizing before reading context or tests on which the conclusion depends
+- Stopping after the first finding or duplicating one root cause across several findings
 
-## Review Heuristics
+## Quick Heuristics
 
 - For bug fixes, check whether the patch fixes only one symptom while leaving sibling paths broken
-- For new flags or branches, check whether they introduce state-space explosion
+- For new flags or branches, enumerate meaningful combinations and preserved invariants
 - For cache, retry, concurrency, or async callback code, check ordering and idempotency
 - For parsing, SQL, HTML, filesystem, or permission logic, check security boundaries first
 - For schema, DTO, or interface field changes, check compatibility and default behavior
@@ -161,9 +126,8 @@ Recommended pattern:
 ## Final Check Before Sending
 
 Before sending:
-- Are findings first?
-- Are findings ordered by severity?
-- Does each finding include evidence and impact?
-- Is any critical context still unread?
-- Did you call out testing gaps?
-- If no issue was found, did you explicitly say so and note residual risk?
+- Are findings first, attributable, evidence-backed, actionable, and ordered by calibrated severity?
+- Was the complete boundary inspected without duplicate root causes?
+- Is any context required for a conclusion still unread?
+- Are tests run and testing gaps stated accurately?
+- With zero findings, does the response say **No actionable findings found**?

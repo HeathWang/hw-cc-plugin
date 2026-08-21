@@ -1,102 +1,84 @@
 ---
 name: bug-analysis
-description: Use when diagnosing bugs, crashes, or unexpected behavior in iOS, React, Python, or Java Spring code. Triggered by error messages, stack traces, crash reports, or when user says "analyze this bug" or "why is this crashing". Performs root cause analysis, evidence gathering, and fix recommendations. Output in Chinese.
+description: Use when a user reports a defect, crash, regression, incorrect result, performance degradation, intermittent failure, or unexplained behavior and wants root-cause analysis or fix recommendations.
 ---
 
 # Bug Analysis
 
 ## Overview
 
-Systematic bug investigation framework covering root cause analysis, evidence gathering, fix recommendations, and prevention strategies. All output in Chinese.
+Investigate any technology stack from evidence, not intuition. Plausible is not proven. Respond in Chinese unless the user requests another language.
 
-## When to Use
+## Operating Contract
 
-- User reports a bug, crash, or unexpected behavior
-- User invokes `/bug-analysis`
-- Need to trace error stack traces, identify root causes, or recommend fixes
+- Treat the user's attribution and the last visible error as hypotheses, not facts.
+- Separate observed facts, inferences, assumptions, and unknowns.
+- Never invent logs, runtime state, reproduction results, file paths, or line numbers.
+- Diagnose without modifying code unless the user also asks for a fix.
+- Ask only questions that change the next step; otherwise proceed with stated assumptions.
+- For active investigation of hard or uncertain bugs, also use `diagnose`.
 
-## Investigation Process
+## Adaptive Investigation
 
-### Step 1: Gather Context
-- Understand symptoms and error messages
-- Identify technology stack (iOS/React/Python/Java Spring)
-- Note reproduction steps and conditions
+### 1. Frame the Failure
 
-### Step 2: Locate Relevant Code
-If files not provided, search proactively:
-- iOS: `*ViewController.swift`, `*.m`, `*.storyboard`
-- React: `*.jsx`, `*.tsx`, `components/*`, `hooks/*`
-- Python: `*.py`, `requirements.txt`, `config/*`
-- Spring: `*Controller.java`, `*Service.java`, `application.yml`
+Establish expected versus actual behavior, scope, onset, frequency, environment, reproducibility, and recent changes. Mark known and missing information.
 
-Follow entry points → imports → dependencies → config files.
+### 2. Follow Evidence
 
-### Step 3: Analyze
+Start from exact errors, timestamps, traces, dumps, metrics, inputs, screenshots, and code. Search real symbols and error text; trace execution and data flow backward from the failure. Inspect relevant callers, state transitions, boundaries, configuration, dependencies, and changes.
 
-**Trace execution flow** → follow code path from entry to failure
-**Identify data flow** → track data transformations
-**Check boundaries** → edge cases, null handling, validation
-**Review dependencies** → library versions, compatibility
-**Inspect state management** → initialization and updates
-**Examine timing** → race conditions, async/await, lifecycle
+Do not replace investigation with a broad list of generic causes.
 
-## Platform-Specific Focus Areas
+### 3. Build a Feedback Signal
 
-| Platform | Key Issues |
-|----------|-----------|
-| iOS (Swift/ObjC) | Memory/retain cycles, thread safety, view lifecycle, AutoLayout, iOS version compat |
-| React | Hook dependencies, state management, event closures, re-rendering, props drilling |
-| Python | Type mismatches, None handling, iterator exhaustion, scope, circular imports |
-| Java Spring | Bean lifecycle, transaction management, thread pool exhaustion, DB connection leaks, serialization |
+Prefer the smallest safe check that reproduces or distinguishes the failure: a focused test, minimal input, replay, version/config comparison, targeted instrumentation, profiler, or query plan. For intermittent issues, raise the reproduction rate and correlate by time, host, input, version, or state.
 
-## Investigation Depth
+If no useful signal exists, request the specific artifact or access needed. Do not compensate with certainty.
 
-| Level | When | Actions |
-|-------|------|---------|
-| L1 Surface | Quick triage | Error messages, stack traces, obvious syntax errors |
-| L2 Component | Standard | Analyze failing component, recent changes, related components |
-| L3 System | Complex | Cross-component interactions, concurrency, DB queries |
-| L4 Deep Dive | Critical/mysterious | Compiled code, memory dumps, vendor source, platform-specific |
+### 4. Rank Falsifiable Hypotheses
 
-## Output Format
+Generate enough alternatives to avoid anchoring, usually two to five. For each include:
 
-```
-**Bug Report**: [Title]
-**Severity**: Critical / High / Medium / Low
+- supporting and contradicting evidence;
+- a falsifiable prediction;
+- the cheapest decisive check.
 
-**症状 (Symptoms)**:
-- 观察到的行为
-- 错误信息或日志
-- 复现条件
+Change one variable at a time and re-rank as evidence changes.
 
-**根因分析 (Root Cause)**:
-[详细说明失败原因、涉及代码、事件链]
+### 5. Calibrate the Conclusion
 
-**证据 (Evidence)**:
-[相关代码片段及行号]
+Use one status:
 
-**影响评估 (Impact)**:
-- 用户影响
-- 数据完整性
-- 系统稳定性
+- **已确认**: the causal chain is demonstrated and material alternatives are ruled out.
+- **最可能**: one explanation leads, but a decisive check is missing.
+- **未确定**: evidence cannot distinguish the leaders.
 
-**推荐修复 (Fix)**:
-[带注释的代码变更]
+Give high, medium, or low confidence with a reason. Distinguish trigger, failure mechanism, and latent condition when they differ. Derive severity from demonstrated impact.
 
-**替代方案**: [方案A优缺点 / 方案B优缺点]
+### 6. Recommend and Verify
 
-**预防策略**: [如何避免 / 建议测试 / 代码审查要点]
+Separate containment, minimal permanent fix, and prevention. If evidence is insufficient, recommend a discriminating experiment, not a speculative patch.
 
-**测试计划**: 单元测试 / 集成测试 / 边界场景 / 回归测试
-```
+A fix is verified only when the original signal stops failing and a regression check passes. Note relevant compatibility, data, security, and operational risks.
 
-## Critical Thinking Checklist
+## Adaptive Output
 
-Before finalizing:
-- [ ] Identified actual root cause, not just symptoms?
-- [ ] Considered edge cases and boundary conditions?
-- [ ] Checked for similar issues elsewhere in codebase?
-- [ ] Proposed fix is minimal and surgical?
-- [ ] Considered backwards compatibility?
-- [ ] Fix won't introduce new bugs?
-- [ ] Suggested appropriate tests?
+Lead with the conclusion. Use only sections that add information:
+
+1. **结论** — status, confidence, and reason.
+2. **已知事实** — sourced observations.
+3. **分析** — causal chain or ranked hypotheses, evidence, and predictions.
+4. **下一步验证** — smallest decisive checks in priority order.
+5. **修复建议** — only justified containment, permanent fix, and prevention.
+6. **验证标准** — proof that the issue is resolved.
+
+Keep direct, well-evidenced cases concise. For intermittent, cross-system, performance, data-integrity, or security failures, include a timeline and deeper evidence chain. Omit empty sections.
+
+## Final Check
+
+- Is the stated root cause stronger than the evidence allows?
+- Is correlation being presented as causation?
+- Does each leading hypothesis have a falsifiable prediction?
+- Is the recommendation fixing the mechanism rather than masking the symptom?
+- Are unresolved unknowns and verification gaps explicit?

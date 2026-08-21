@@ -18,8 +18,7 @@
 - **❓ 问答工作流**：基于项目文件进行技术问题分析和指导
 - **🌍 iOS 国际化**：支持 SwiftGen L10n 的完整多语言管理流程
 - **🏗️ 架构分析**：在 `docs/Analytics/` 下生成可持久保存的架构分析报告
-- **📄 PRD 与交接**：将已讨论清楚的上下文整理成 PRD 或后续 Agent 可接手的交接文档
-- **🧠 方案拷问**：结合代码、术语表、ADR 和既有文档对技术方案进行压力测试
+- **📄 PRD 工作流**：将已讨论清楚的上下文整理成 PRD
 - **🔗 语雀文档获取**：通过本地已登录浏览器会话获取单篇语雀文档
 - **⚡ 沟通模式**：在用户明确要求时提供更短、更省 token 的技术回复
 
@@ -174,34 +173,7 @@
 - 指导定向调试探针、回归测试和原始场景验证
 - 在宣布修复前完成清理和复盘检查
 
-### 12. Grill Me
-
-`skills/grill-me/SKILL.md`
-
-对计划、设计、架构或技术方案进行压力测试，通过一次一个问题的方式逐步走完关键决策分支，直到形成共同理解。
-
-**能力：**
-
-- 用连续、聚焦的问题挑战方案
-- 每个问题都给出推荐答案或默认立场，便于用户判断
-- 当仓库证据能够回答问题时，优先探索代码而不是追问用户
-- 在结束时总结已达成方向、剩余风险和未解决问题
-
-### 13. Grill with Docs
-
-`skills/grill-with-docs/SKILL.md`
-
-结合项目领域语言、术语表、`CONTEXT.md`、ADR、既有决策、代码行为和易混淆术语，对方案进行文档感知的压力测试。
-
-**能力：**
-
-- 先有限扫描上下文文档、ADR 和明显的代码术语
-- 发现方案用语与既有术语表冲突时立即指出
-- 用具体场景澄清领域边界和边界条件
-- 术语达成一致后即时更新 `CONTEXT.md`，无法编辑时说明应写入的具体内容
-- 仅在难以回退、缺少上下文会令人困惑、且确实存在权衡时建议创建 ADR
-
-### 14. To PRD
+### 12. To PRD
 
 `skills/to-prd/SKILL.md`
 
@@ -215,21 +187,7 @@
 - 使用固定 PRD 模板覆盖问题、方案、用户故事、实现决策、测试决策、范围和补充说明
 - 仅在项目配置和 triage label 可确认时发布到 issue tracker
 
-### 15. Handoff
-
-`skills/handoff/SKILL.md`
-
-为后续 Agent 或下一轮会话生成交接文档，并保存到操作系统临时目录，而不是当前仓库。
-
-**能力：**
-
-- 记录目标、当前状态、待办、涉及文件、已运行命令、风险和约束
-- 根据用户指定的下一轮重点调整交接内容
-- 给出建议使用的 skills 及原因
-- 使用便于复制的代码块返回文件绝对路径
-- 脱敏敏感信息，并避免重复已有 PRD、计划、ADR、Issue、Commit 或 Diff
-
-### 16. Caveman
+### 13. Caveman
 
 `skills/caveman/SKILL.md`
 
@@ -289,10 +247,7 @@ Fetch and follow instructions from https://raw.githubusercontent.com/HeathWang/h
 - `skills/fetch-yuque-doc/scripts/fetch_yuque_doc.py` - 语雀页面提取脚本
 - `skills/fetch-yuque-doc/references/browser-notes.md` - 浏览器/Profile 假设与提取说明
 - `skills/diagnose/SKILL.md` - 疑难 Bug 诊断工作流
-- `skills/grill-me/SKILL.md` - 计划与设计压力测试工作流
-- `skills/grill-with-docs/SKILL.md` - 结合领域文档的方案压力测试工作流
 - `skills/to-prd/SKILL.md` - PRD 创建与发布工作流
-- `skills/handoff/SKILL.md` - 会话交接工作流
 - `skills/caveman/SKILL.md` - 简洁沟通模式
 
 ---
