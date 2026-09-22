@@ -6,7 +6,7 @@ This file provides guidance to Claude Code and other AI coding agents when worki
 
 `hw-cc-plugin` is a Claude Code plugin and cross-agent skills library for daily development workflows. The repository currently centers on native `skills/` rather than legacy slash-command markdown files.
 
-The skills cover Git commit automation, code review, bug diagnosis, Java-to-TypeScript/Swift conversion, iOS localization, architecture analysis, PRD creation, Yuque document fetching, and concise communication mode. Skills that already exist in `mattpocock/skills` live under `notused/` instead of the active inventory.
+The skills cover Git commit automation, code review, bug diagnosis, Java-to-TypeScript/Swift conversion, iOS localization, architecture analysis, PRD creation, Yuque document fetching, screenshot-based UI reconstruction, and concise communication mode. Skills that already exist in `mattpocock/skills` live under `notused/` instead of the active inventory.
 
 ## Current Architecture
 
@@ -55,6 +55,7 @@ Primary skills live under `skills/<name>/SKILL.md`:
 - `to-prd`: convert settled context into a PRD.
 - `fetch-yuque-doc`: fetch one Yuque document via a local logged-in browser session.
 - `caveman`: ultra-concise communication mode.
+- `reconstructing-ui-from-screenshots`: measure a design screenshot, then implement UI from recorded size, spacing, color, and typography.
 
 Supporting files are part of the shipped skill contract. Keep scripts, reference docs, and agent configs colocated with the skill that owns them.
 

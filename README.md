@@ -21,6 +21,7 @@ Daily development skills, primarily for frontend development, iOS, H5, and more.
 - **📄 PRD Workflow**: Convert settled context into PRDs
 - **🔗 Yuque Document Fetching**: Fetch a single Yuque page through a local logged-in browser session
 - **⚡ Communication Modes**: Token-efficient concise responses for users who explicitly request brevity
+- **🖼️ UI from Screenshots**: Measure a design image, then implement matching size, spacing, color, and typography
 
 ## 🚀 Skills
 
@@ -180,6 +181,18 @@ Enables an ultra-concise communication mode for users who explicitly request sho
 - Keeps exact technical terms, code, paths, commands, and error messages intact
 - Temporarily expands only when brevity could hide important warnings or multi-step clarity
 
+### 14. Reconstructing UI from Screenshots
+`skills/reconstructing-ui-from-screenshots/SKILL.md`
+
+Implements or corrects app and web UI from a design image, screenshot, mockup, or reference PNG when accurate size, spacing, color, typography, assets, and alignment matter.
+
+**Features:**
+- Measures the reference before editing, using a bundled image analyzer
+- Separates image-to-layout scale from device pixel ratio
+- Requires a confirmed coordinate mapping before copying pixels into layout constants
+- Reuses existing project tokens and components
+- Reports implementation changes and code-check results; final visual comparison stays with the user unless they ask for agent-side verification
+
 ## 📦 Installation
 
 ### Claude Code
@@ -229,6 +242,8 @@ For detailed skill-specific documentation, refer to the individual skill files i
 - `skills/diagnose/SKILL.md` - Hard-bug diagnosis workflow
 - `skills/to-prd/SKILL.md` - PRD creation and publishing workflow
 - `skills/caveman/SKILL.md` - Concise communication mode
+- `skills/reconstructing-ui-from-screenshots/SKILL.md` - Screenshot-to-UI measurement and implementation workflow
+- `skills/reconstructing-ui-from-screenshots/scripts/analyze_ui_image.py` - Reference image measurement script
 
 ---
 

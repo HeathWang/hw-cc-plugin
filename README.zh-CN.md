@@ -21,6 +21,7 @@
 - **📄 PRD 工作流**：将已讨论清楚的上下文整理成 PRD
 - **🔗 语雀文档获取**：通过本地已登录浏览器会话获取单篇语雀文档
 - **⚡ 沟通模式**：在用户明确要求时提供更短、更省 token 的技术回复
+- **🖼️ 截图还原 UI**：先测量设计图，再按记录的尺寸、间距、颜色和排版实现界面
 
 ## 🚀 Skills
 
@@ -200,6 +201,20 @@
 - 保留精确技术术语、代码、路径、命令和错误信息
 - 当过度简短会隐藏重要警告或影响多步骤理解时，临时恢复完整说明
 
+### 14. Reconstructing UI from Screenshots
+
+`skills/reconstructing-ui-from-screenshots/SKILL.md`
+
+根据设计图、截图、mockup 或参考 PNG 实现或修正 App / Web UI，适用于尺寸、间距、颜色、排版、资源和对齐必须准确的场景。
+
+**能力：**
+
+- 编辑前先测量参考图，使用随 skill 提供的图像分析脚本
+- 把图像到布局的缩放和设备像素比分开记录
+- 坐标映射确认为 `confirmed` 之前，不把截图像素直接写成布局常量
+- 复用项目已有的 token 和组件
+- 汇报实现变更和代码检查结果；除非用户明确要求，最终视觉对比由用户完成
+
 ## 📦 安装
 
 ### Claude Code
@@ -249,6 +264,8 @@ Fetch and follow instructions from https://raw.githubusercontent.com/HeathWang/h
 - `skills/diagnose/SKILL.md` - 疑难 Bug 诊断工作流
 - `skills/to-prd/SKILL.md` - PRD 创建与发布工作流
 - `skills/caveman/SKILL.md` - 简洁沟通模式
+- `skills/reconstructing-ui-from-screenshots/SKILL.md` - 截图还原 UI 的测量与实现工作流
+- `skills/reconstructing-ui-from-screenshots/scripts/analyze_ui_image.py` - 参考图测量脚本
 
 ---
 
