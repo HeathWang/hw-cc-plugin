@@ -33,7 +33,8 @@ Automates the Git commit process with intelligent file staging and Chinese commi
 **Features:**
 - Smart file grouping by functionality
 - Automatic commit message generation in Chinese
-- Conventional Commits format with emojis
+- Plain-text Conventional Commits format without emoji
+- Continues when a hook appends `Co-authored-by: Cursor`; does not amend or halt for that trailer
 - Loops until working tree is clean
 - Asks for explicit push confirmation after all commits complete
 
@@ -187,9 +188,11 @@ Enables an ultra-concise communication mode for users who explicitly request sho
 Implements or corrects app and web UI from a design image, screenshot, mockup, or reference PNG when accurate size, spacing, color, typography, assets, and alignment matter.
 
 **Features:**
-- Measures the reference before editing, using a bundled image analyzer
+- Uses the shortest path for the scope: direct editing for local components, coordinate mapping for full screens
+- Defaults to no analyzer run for local changes and at most one before the first full-screen edit
+- Measures each code-relevant visible mismatch once, then edits instead of repeatedly rescanning
 - Separates image-to-layout scale from device pixel ratio
-- Requires a confirmed coordinate mapping before copying pixels into layout constants
+- Requires confirmed mapping only when absolute screenshot pixels become layout constants
 - Reuses existing project tokens and components
 - Reports implementation changes and code-check results; final visual comparison stays with the user unless they ask for agent-side verification
 
