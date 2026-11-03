@@ -1,6 +1,6 @@
 ---
 name: improve-codebase-architecture
-description: Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
+description: Use when the user wants architectural deepening opportunities for a codebase or named files, shown as a visual HTML report, and when they then pick candidates from that report to implement in the code already reviewed.
 disable-model-invocation: true
 ---
 
@@ -8,9 +8,22 @@ disable-model-invocation: true
 
 Surface architectural friction and propose **deepening opportunities**: refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
 
-This command is _informed_ by the project's domain model and built on a shared design vocabulary:
+## Language and Expression Rules
 
-- Call the Skill tool with "codebase-design" for the architecture vocabulary (**module**, **interface**, **depth**, **seam**, **adapter**, **leverage**, **locality**) and its principles (the deletion test, "the interface is the test surface", "one adapter = hypothetical seam, two = real"). Use these terms exactly in every suggestion, and don't drift into "component," "service," "API," or "boundary."
+1. **Follow User / Context Language**:
+   - Determine the output language from the user's request, recent conversation context, or project documentation (`CONTEXT.md`, `CLAUDE.md`, README, commit history). If the user only provides a slash command and file paths (e.g. `/improve-codebase-architecture path/to/File.swift`), infer the language from the conversation history, user rules, or codebase comments/docs (defaulting to Simplified Chinese when working in a Chinese user/project context).
+   - **Both the HTML report and the chat conclusion MUST use that language** — including HTML `<html lang="...">`, `<title>`, section headers, legend, candidate titles, badges, diagram labels/annotations, Problem/Solution descriptions, benefits, Top Recommendation, and follow-up questions.
+   - Keep code identifiers (class names, method names, file paths) in their original code form.
+
+2. **Concise, Plain, and Easy to Understand (精炼通俗，直白易懂)**:
+   - Write for human developers who want to grasp the problem in 5 seconds, not for an academic architecture textbook.
+   - Replace obscure academic jargon with plain, concrete cause-and-effect language. For example, instead of *"split-brain state bounces across the engine seam via raw DTOs"*, write *"结果页的 6 个修改接口直接写在 VC 里，改完又塞回 Engine 刷新，状态两头跑"*.
+   - State **what is messy right now**, **how to merge/simplify it**, and **what concrete benefit we get** (e.g., fewer places to touch, delete dead code, testable without UI).
+   - Keep every sentence short and direct. No filler, no pompous phrasing.
+
+This command is _informed_ by the project's domain model and built on a shared design mindset:
+
+- Focus on core architecture concepts: **module (模块)**, **interface (接口/对外入口)**, **depth (深度：小接口封装复杂实现 vs 浅层透传)**, **seam (接缝/解耦点)**, **adapter (适配层)**, **leverage (杠杆率：一处实现多处复用)**, and **locality (内聚性/局部性：改动集中在同一处)**. Apply these principles directly: the deletion test, "the interface is the test surface", "one adapter = hypothetical seam, two = real". Express conclusions in natural, everyday developer language.
 - The domain language in `CONTEXT.md` gives names to good seams; ADRs in `docs/adr/` record decisions this command should not re-litigate.
 
 ## Process
@@ -40,32 +53,45 @@ Write a self-contained HTML file to the OS temp directory so nothing lands in th
 
 The report uses **Tailwind via CDN** for layout and styling, and **Mermaid via CDN** for diagrams where a graph/flow/sequence reliably communicates the structure. Mix Mermaid with hand-crafted CSS/SVG visuals: use Mermaid when relationships are graph-shaped (call graphs, dependencies, sequences), and hand-built divs/SVG when you want something more editorial (mass diagrams, cross-sections, collapse animations). Each candidate gets a **before/after visualisation**. Be visual.
 
-For each candidate, render a card with:
+For each candidate, render a card (all text in the user's context language) with:
 
 - **Files**: which files/modules are involved
-- **Problem**: why the current architecture is causing friction
-- **Solution**: plain English description of what would change
-- **Benefits**: explained in terms of locality and leverage, and how tests would improve
-- **Before / After diagram**: side-by-side, custom-drawn, illustrating the shallowness and the deepening
-- **Recommendation strength**: one of `Strong`, `Worth exploring`, `Speculative`, rendered as a badge
+- **Problem (现状痛点)**: plain, everyday explanation of why the current code is painful to read, change, or test (1–2 short sentences)
+- **Solution (优化方案)**: clear, down-to-earth description of how to consolidate or simplify it (1–2 short sentences)
+- **Benefits (收益)**: concrete, easy-to-read bullets showing what gets deleted, where changes concentrate (locality), and how testing becomes simpler
+- **Before / After diagram**: side-by-side, custom-drawn, illustrating the current mess vs. the simplified structure (use the user's language for diagram annotations and explanations, keeping only real code symbols in code font)
+- **Recommendation strength**: one of `Strong` (`强烈推荐`), `Worth exploring` (`值得探索`), `Speculative` (`可选尝试`), rendered as a badge
 
-End the report with a **Top recommendation** section: which candidate you'd tackle first and why.
+End the report with a **Top recommendation (优先改造建议)** section: which candidate you'd tackle first and why, explained in plain language.
 
-**Use CONTEXT.md vocabulary for the domain, and the `/codebase-design` vocabulary for the architecture.** If `CONTEXT.md` defines "Order," talk about "the Order intake module," not "the FooBarHandler," and not "the Order service."
+**Use `CONTEXT.md` domain terms and keep architectural explanations natural.** Do not force awkward English glossary words into non-English reports. Explain module depth, interface size, and coupling in clear, idiomatic language that any developer on the team can immediately understand.
 
 **ADR conflicts**: if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting the ADR. Mark it clearly in the card (e.g. a warning callout: _"contradicts ADR-0007, but worth reopening because…"_). Don't list every theoretical refactor an ADR forbids.
 
 See [HTML-REPORT.md](HTML-REPORT.md) for the full HTML scaffold, diagram patterns, and styling guidance.
 
-Do NOT propose interfaces yet. After the file is written, ask the user: "Which of these would you like to explore?"
+Do NOT propose detailed code interfaces in the report. After the file is written, summarize the candidates briefly in the user's language (concise and plain) and ask which candidates to implement.
 
-### 3. Grilling loop
+### 3. Implement the chosen candidates
 
-Once the user picks a candidate, call the Skill tool with "grilling" to walk the decision tree with them: constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
+When the user names one or more candidates — by number, title, or quoted report text — and asks to do, optimize, or land them, implement that selection in the codebase under review. This step has no other skill and no lookup step: the report and the code already read are the procedure. Several named candidates are one change when they touch the same state.
 
-Side effects happen inline as decisions crystallize; call the Skill tool with "domain-modeling" to keep the domain model current as you go:
+The spec is already in context:
 
-- **Naming a deepened module after a concept not in `CONTEXT.md`?** Add the term to `CONTEXT.md`. Create the file lazily if it doesn't exist.
-- **Sharpening a fuzzy term during the conversation?** Update `CONTEXT.md` right there.
-- **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when the reason would actually be needed by a future explorer to avoid re-suggesting the same thing; skip ephemeral reasons ("not worth it right now") and self-evident ones.
-- **Want to explore alternative interfaces for the deepened module?** Call the Skill tool with "codebase-design" and use its design-it-twice parallel sub-agent pattern.
+- the HTML report's Problem, Solution, and Before / After for the chosen cards
+- the files, methods, and call paths read during Explore
+- the user's selection
+
+Follow behavior the current code already shows, except where the chosen Solution explicitly changes it. User-visible copy, error codes, popup and toast ownership, paywall triggers, and refresh timing come from that code and the report. Put the deepened logic in the module the report named. Leave UI the report left in the view layer (popups, toasts, navigation, paywalls) there. Shape the new interface to match the module's existing types and call style. Do not design a second interface in parallel.
+
+A fact you can read from code already opened is not a question. If the report's Solution and that code name the module, the methods to move, and what stays in the UI, edit now.
+
+Stop and ask one question only when a behavior the candidate must change is neither stated in the report nor visible in the code you read. State the choice and a recommended default, then wait. Do not open a decision tree or a round of design questions before that.
+
+While editing:
+
+- **The deepened module needs a domain term `CONTEXT.md` does not already name?** Add that term. Create `CONTEXT.md` only in that case.
+- **The edit makes a fuzzy term in `CONTEXT.md` precise?** Update that term in the same edit.
+- **The user rejects a candidate for a reason a later review would need in order not to suggest it again?** Offer one ADR: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Skip "not worth it right now" and reasons that are obvious from the code.
+
+After the edit, run the check the repo already uses for those files (its test target or compiler command). Do not add a new test harness as a side task. If the repo has no such check, say so. The moved logic must be callable without presenting UI.

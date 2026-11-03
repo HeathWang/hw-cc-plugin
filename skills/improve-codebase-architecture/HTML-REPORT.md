@@ -4,12 +4,14 @@ The architectural review is rendered as a single self-contained HTML file in the
 
 ## Scaffold
 
+Set `<html lang="...">` and all visible UI labels, headings, legends, badges, diagram notes, and prose to match the user's context language (e.g., Simplified Chinese `zh-CN` when the user or project context is Chinese). Keep only actual code identifiers and file paths in English/code form.
+
 ```html
 <!doctype html>
-<html lang="en">
+<html lang="{{lang}}">
   <head>
     <meta charset="utf-8" />
-    <title>Architecture review for {{repo name}}</title>
+    <title>{{localized title, e.g. 架构优化报告：repo name}}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
       import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
@@ -35,24 +37,24 @@ The architectural review is rendered as a single self-contained HTML file in the
 
 ## Header
 
-Repo name, date, and a compact legend: solid box = module, dashed line = seam, red arrow = leakage, thick dark box = deep module. No introduction paragraph. Straight into the candidates.
+Repo name, date, and a compact legend (localized to the user's language, e.g. 实线框 = 模块, 虚线 = 解耦边界, 红线 = 职责越界/耦合泄漏, 深色粗框 = 收拢后的深模块; or in English: solid box = module, dashed line = seam, red arrow = leakage, thick dark box = deep module). No introduction paragraph. Straight into the candidates.
 
 ## Candidate card
 
-The diagrams carry the weight. Prose is sparse, plain, and uses the glossary terms (from the `/codebase-design` skill) without ceremony.
+The diagrams carry the weight. Prose is sparse, plain, and written in the user's language using everyday developer expressions rather than obscure academic jargon.
 
 Each candidate is one `<article>`:
 
-- **Title**: short, names the deepening (e.g. "Collapse the Order intake pipeline").
-- **Badge row**: recommendation strength (`Strong` = emerald, `Worth exploring` = amber, `Speculative` = slate), plus a tag for the dependency category (`in-process`, `local-substitutable`, `ports & adapters`, `mock`).
+- **Title**: short, action-oriented, in the user's language (e.g. "1. 将结果页的 6 个修改接口收拢进 `CalorieRecognitionFlowEngine`" or "Collapse the Order intake pipeline").
+- **Badge row**: recommendation strength (`强烈推荐` / `Strong` = emerald, `值得探索` / `Worth exploring` = amber, `可选尝试` / `Speculative` = slate), plus a short tag for the dependency approach (e.g. `进程内收拢` / `in-process`, `本地可替换` / `local-substitutable`, `接口适配解耦` / `ports & adapters`, `Mock 隔离` / `mock`).
 - **Files**: monospaced list, `font-mono text-sm`.
-- **Before / After diagram**: the centrepiece. Two columns, side by side. See patterns below.
-- **Problem**: one sentence. What hurts.
-- **Solution**: one sentence. What changes.
-- **Wins**: bullets, ≤6 words each. e.g. "Tests hit one interface", "Pricing logic stops leaking", "Delete 4 shallow wrappers".
+- **Before / After diagram**: the centrepiece. Two columns, side by side (`改造前` / `Before` vs `改造后` / `After`). Annotations inside the diagram must also use the user's language so the visual is immediately understandable at a glance. See patterns below.
+- **Problem (`现状痛点` / `Problem`)**: 1–2 short, plain sentences. What hurts in practice.
+- **Solution (`优化方案` / `Solution`)**: 1–2 short, plain sentences. How to merge or simplify it.
+- **Wins**: short bullets in plain language. e.g. "删掉 4 个空 Delegate 方法", "状态收拢到一处，不再跨 VC 来回刷", "脱离 UIKit 即可直接跑单测".
 - **ADR callout** (if applicable): one line in an amber-tinted box.
 
-No paragraphs of explanation. If the diagram needs a paragraph to be understood, redraw the diagram.
+No long paragraphs of explanation. If the diagram needs a paragraph to be understood, redraw the diagram.
 
 ## Diagram patterns
 
@@ -103,21 +105,21 @@ Before: a tree of function calls rendered as nested boxes. After: the same tree 
 
 One larger card. Candidate name, one sentence on why, anchor link to its card. That's it.
 
-## Tone
+## Language and Tone
 
-Plain English, concise, but the architectural nouns and verbs come straight from the `/codebase-design` skill. Concision is not an excuse to drift.
+1. **Match the user's context language throughout the entire HTML file**:
+   - Do not output an English HTML report when the user or project context is in Chinese (or another language).
+   - Translate all UI chrome, legend items, section headings, `改造前 / 改造后` headers, diagram callouts, Problem/Solution labels, and bullet points into the user's language. Keep only actual code identifiers (`CameraVC`, `confirmAiRecord()`, file paths) in their original code form.
 
-**Use exactly:** module, interface, implementation, depth, deep, shallow, seam, adapter, leverage, locality.
+2. **Concise, plain, and developer-friendly (精炼通俗，能一眼看懂)**:
+   - Avoid literal translations of academic terms or stiff jargon (do not write convoluted phrases like *"通过端口与适配器在接缝处深化模块以消除分裂脑状态反弹"*).
+   - Speak plainly about what the code actually does: **"哪里散了、哪里重复了、怎么收拢、改完有什么好处"**.
+   - Good Chinese examples:
+     - 痛点：`CalorieRecognitionLoadingVC` 塞了 1396 行代码，结果页的 6 个修改请求直接写在 VC 里，改完还要手动把数据塞回 `FlowEngine`，状态两头维护。
+     - 方案：把结果页的增删改、餐次状态和菜品校验统一收进 `FlowEngine`，VC 只负责展示和发操作事件。
+     - 收益：`VC 瘦身只管 UI` · `删掉跨层回刷数据的胶水方法` · `核心流程不依赖 UIKit 即可直接单测`。
+   - Good English examples:
+     - "Order intake module is too thin: callers still have to wire validation and pricing themselves."
+     - "Pull validation and pricing inside one module so callers and tests only call one entry point."
 
-**Never substitute:** component, service, unit (for module) · API, signature (for interface) · boundary (for seam) · layer, wrapper (for module, when you mean module).
-
-**Phrasings that fit the style:**
-
-- "Order intake module is shallow: interface nearly matches the implementation."
-- "Pricing leaks across the seam."
-- "Deepen: one interface, one place to test."
-- "Two adapters justify the seam: HTTP in prod, in-memory in tests."
-
-**Wins bullets** name the gain in glossary terms: *"locality: bugs concentrate in one module"*, *"leverage: one interface, N call sites"*, *"interface shrinks; implementation absorbs the wrappers"*. Don't write *"easier to maintain"* or *"cleaner code"*, because those terms aren't in the glossary and don't earn their place.
-
-No hedging, no throat-clearing, no "it's worth noting that…". If a sentence could be a bullet, make it a bullet. If a bullet could be cut, cut it. If a term isn't in the `/codebase-design` glossary, reach for one that is before inventing a new one.
+No hedging, no throat-clearing, no "it's worth noting that…". If a sentence could be a bullet, make it a bullet. If a bullet could be cut, cut it.
