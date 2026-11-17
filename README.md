@@ -35,8 +35,9 @@ Automates the Git commit process with intelligent file staging and Chinese commi
 - Automatic commit message generation in Chinese
 - Plain-text Conventional Commits format without emoji
 - Continues when a hook appends `Co-authored-by: Cursor`; does not amend or halt for that trailer
-- Loops until working tree is clean
-- Asks for explicit push confirmation after all commits complete
+- Minimal inspect → commit → report and ask about pushing workflow, keeping related code, tests, and docs together
+- No automatic tests, lint, builds, or code review before committing
+- Asks whether to push after completing the requested commits; reuses an explicit push decision already given
 
 ### 2. Code Review with Files
 `skills/code-review-with-files/SKILL.md`

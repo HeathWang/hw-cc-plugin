@@ -1,116 +1,61 @@
 ---
 name: git-commit-workflow
-description: Use when committing git changes, especially when staged files already exist, changes need logical split commits, untracked files need safety checks, commit hooks modify files, or Chinese Conventional Commit messages are required.
+description: Use when the user asks to commit Git changes or invokes /gitcommit, including existing staged changes, logical split commits, and Chinese Conventional Commit messages.
 ---
 
 # Git Commit Workflow
 
-## Overview
+Complete the requested commits with minimal inspection and tool calls. Keep the task limited to Git operations and writing accurate Chinese commit messages.
 
-Commit every working-tree change as a sequence of logical Chinese Conventional Commits, then ask whether to push.
+## Scope
 
-**Core rules:** A pre-existing staged set is this round's commit unit. The workflow ends only when `git status` is clean or the user says stop. Never stage likely secrets. Never add commit metadata the user did not request. A hook-appended `Co-authored-by: Cursor <cursoragent@cursor.com>` is expected: do not check for it, amend it, or cite it as a reason to stop. Push only after an explicit structured choice.
-
-Run git commands sequentially, never in parallel, and read each output before deciding the next step.
-
-## When to Use
-
-- User runs `/gitcommit` or asks to commit changes
-- Staged, unstaged, or untracked changes need committing, possibly split into several commits
+- **Do not run tests, lint, builds, or type checks as part of committing.** Passing tests is not a prerequisite imposed by this skill. If the user separately requests validation or a higher-priority instruction requires it, handle that requirement explicitly; do not invent a validation gate.
+- Read diffs to understand the commit and spot likely secrets. Do not launch code review, repository-wide reference searches, refactoring, or fixes merely to prepare a commit.
+- Respect the user's file scope and stop instructions. With no narrower scope, process all safe working-tree changes. Already-staged changes are the first commit unit; preserve them as-is, including partial staging. If they conflict with an explicit file scope, clarify rather than silently changing the index.
+- Do not stage likely secrets such as credentials, private keys, or local `.env` files. Report and leave risky files uncommitted; continue with safe files. If risky content is already staged, stop before committing it and ask how to exclude it.
 
 ## Workflow
 
-### Step 1: Check Status
+### 1. Inspect once
 
-Run `git status`. In the first round, also run `git log --format=%s -10` to learn the repository's type and scope vocabulary.
+Run `git status --short` and read the relevant staged/unstaged diffs. Inspect untracked files selected for inclusion separately. Reuse diffs already read in this conversation when the files have not changed. Read recent commit subjects only if the repository's naming convention is unclear.
 
-### Step 2: Choose the Commit Unit
+Choose the fewest coherent commits: keep a change's code, tests, and documentation together; split only unrelated changes. Do not split merely by file type or directory. If nothing is in scope, report that and finish.
 
-**Files already staged:** the staged set is this round's commit unit, as-is. Do not `git add`, unstage, reset, or regroup it unless the user explicitly asks. Note the staged file list and the pre-existing unstaged/untracked files; failed-commit recovery in Step 3 depends on this list.
+### 2. Stage and commit
 
-**Nothing staged:** pick one logical group (one feature with its model, view, logic, and tests; one bug fix; one module refactor; or one documentation change) and stage only those files with `git add <file>...`.
+If nothing is staged, stage the chosen group with `git add -- <paths>`. If changes were already staged, commit that set without adding, unstaging, or regrouping it. Record the staged paths and any unstaged edits to those paths for hook recovery.
 
-**Secret check before any `git add`:** inspect the filenames and diffs of the group. Likely secrets are `.env` files, credentials, tokens, API keys, private keys, certificates, local config, and files containing passwords. If any appear:
+Confirm the staged scope. Read `git diff --cached` only for content not yet inspected or changed since inspection; a staged file summary is enough when the exact content is already known.
 
-1. Stage nothing from the group.
-2. Report the risky files to the user.
-3. After they are excluded, stage only the safe files and leave the risky files uncommitted.
+Write the message to a temporary file using a file-writing tool or a quoted heredoc, then run `git commit -F <message-file>`. Remove the temporary file afterward. Example message:
 
-This holds even when the user said "全部提交", "commit everything", "别问问题", or "I'm in a hurry".
+```text
+fix(git-commit-workflow): 精简提交流程
 
-### Step 3: Write and Commit
-
-Run `git diff --cached`, then commit with a HEREDOC so the blank line and body survive, printing the recorded message in the same call:
-
-```bash
-git commit -m "$(cat <<'EOF'
-<type>(<scope>): <中文简述>
-
-1. <一项具体改动，必要时说明原因>
-2. <一项具体改动>
-EOF
-)" && git log -1 --format=%B
+1. 合并重复检查并减少无关拆分
+2. 明确提交不要求运行测试
 ```
 
-The message consists of exactly these parts:
+Use `<type>(<scope>): <中文简述>` without emoji. Choose the type by intent (`feat`, `fix`, `refactor`, `docs`, etc.); behavior changes in skills are `feat`/`fix`, wording-only edits are `docs`. Use the primary module or skill as scope, a short verb-led Chinese subject, and a blank line followed by a concise numbered body. Breaking changes use `!` and a `BREAKING CHANGE:` paragraph.
 
-- **type**: `feat`, `fix`, `perf`, `refactor`, `docs`, `style`, `test`, `build`, `ci`, `chore`, or `revert`, chosen by the intent of the diff. Changed behavior is `feat`/`fix`, including behavior defined in Markdown such as skill rules; wording-only edits are `docs`.
-- **scope**: the primary module, directory, or skill; one plural umbrella scope such as `skills` when several are touched; spelled as in recent history.
-- **中文简述**: Chinese, starts with a verb, at most about 30 characters, no trailing punctuation. Identifiers, file names, and commands stay as-is.
-- **body**: one blank line after the subject, then a numbered list with one concrete change per item.
-- **breaking change**: when the diff breaks callers, users, or data compatibility, write `<type>(<scope>)!:` and end with a paragraph `BREAKING CHANGE: <说明>`.
+Do not add attribution or sign-off unless requested. Leave hook-added metadata, including `Co-authored-by: Cursor`, alone; do not inspect or amend commits just for that trailer.
 
-Use a plain `git commit -m`. Add `--trailer`, `--signoff`, `Co-authored-by`, `Made-with: Cursor`, or any other attribution only when the user explicitly requests it.
+Execute Git mutations sequentially and stop on failure. After success, use the commit output for its hash and subject; do not read back the full message routinely. Repeat only for remaining in-scope groups, reusing known diffs unless hooks or concurrent edits changed them.
 
-**After a successful commit**, go to Step 4. Do not compare the recorded message against `Co-authored-by: Cursor <cursoragent@cursor.com>`, and do not mention that trailer. A commit hook may append it; leave the commit unchanged, continue any remaining rounds, and still ask the push question when the tree is clean.
+### 3. Report and ask whether to push
 
-**If `git commit` fails:**
+Run `git status --short` once after the last commit. Briefly report commit hashes/subjects and any remaining changes. Report validation only if it actually ran or the user asked about it; never imply tests passed.
 
-1. Do not start another group. Read the error output and run `git status`.
-2. If hooks modified files from the failed staged set (per the list from Step 2), inspect their diff, stage only those files, and retry the same commit.
-3. If hooks touched other files, injected metadata, or the state is unclear, stop and report.
-4. Do not use `--amend`; the failed commit does not exist.
+After completing the requested commits, ask `提交已完成，是否现在推送到远端？` with options `是，推送` / `否，暂不推送`, using an available structured question tool that permits approval questions (such as `request_user_input_async`, `AskUserQuestion`, or `AskQuestion`). If no permitted tool is available, ask in the final response. A commit summary alone does not complete this step. Wait for an explicit answer before pushing; silence is not approval.
 
-### Step 4: Loop
+If the user already requested pushing, proceed without asking again. If they explicitly declined pushing or asked to stop after this commit, report and finish without the question. Do not ask to push when there was nothing to commit or a commit failed.
 
-Run `git status`:
+On approval, use the configured upstream. If the destination is missing or ambiguous, ask for the remote/branch; on detached HEAD, report the blocker. Never force-push automatically. On decline, leave the commits local and finish.
 
-- **Changes remain:** return to Step 2 for the next logical group, re-checking what is staged first.
-- **Clean:** go to Step 5.
-- **User said to stop after this round** ("先提交这一轮", "剩下的改动之后再说", "先到这里", or similar): report the remaining changes and end without Step 5.
+## Failure handling
 
-A successful commit is one round, not completion.
-
-### Step 5: Ask Whether to Push
-
-Only after a clean `git status`, ask with the runtime's structured choice tool (`AskQuestion`, `AskUserQuestion`), not with open-ended text:
-
-- Question: `所有提交已完成，是否现在推送到远端？`
-- Options: `是，推送` / `否，暂不推送`
-
-**否，暂不推送:** run no push command and report that the commits remain local.
-
-**是，推送:**
-
-1. Run `git branch --show-current`. An empty result means detached HEAD: report that automatic push is unsafe and stop.
-2. Run `git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}'`. If an upstream exists, run `git push`.
-3. With no upstream, run `git remote`, then ask another structured choice listing each remote plus a cancel option, even when only one remote exists. After a selection, run `git push -u <remote> HEAD`.
-4. Report the result. On failure, show the error; never retry with `--force`, `--force-with-lease`, or different arguments.
-
-## Rationalizations
-
-| Thought | Reality |
-|---------|---------|
-| "The staged files look mixed; regrouping them is safer." | The staged set is the user's decision. Commit it as-is unless they ask otherwise. |
-| "The first commit worked, so I'm done." | `git status` decides completion, not the first commit. |
-| "I'll stage everything remaining to finish faster." | Stage one logical group per round. |
-| "'之后再说' isn't an explicit stop." | Natural-language stop instructions count. |
-| "They said commit everything and don't ask, so `.env` is fine." | Likely secrets stop the group and get reported first, under any instruction. |
-| "I'll commit the safe docs now and mention `.env` later." | Report and exclude risky files before staging anything from that group. |
-| "The hook fixed the file; I'll commit it in a later round." | Recover and retry the failed commit unit before touching anything else. |
-| "A `Made-with: Cursor` trailer is harmless." | Unrequested metadata is an unauthorized change to commit content. Do not add it yourself. |
-| "The hook appended `Co-authored-by: Cursor`, so I should stop instead of continuing or pushing." | That trailer is expected. Do not check for it, amend the commit, or skip the rest of the workflow. |
-| "The commits are done, so a summary is enough." | A clean status requires the structured push choice. |
-| "There's only one remote; choosing it is harmless." | Setting upstream changes future pushes. Let the user select it. |
-
-**Stop and return to the workflow** if you are about to: run `git add` while files are already staged; stage a likely secret; add unrequested metadata yourself; amend or halt because a hook appended `Co-authored-by: Cursor`; process other files while a failed commit is unrecovered; finish without the push choice; or pick a remote or force-push on your own.
+- If a commit fails, inspect the error and current status before doing anything else. Do not move to another group or use `--amend`.
+- If a hook only formatted files in the failed commit, inspect the changes and restage only the intended content, preserving any pre-existing unstaged edits; retry once. If safe recovery is unclear or the retry fails, report the blocker and stop.
+- Git hooks may run tests automatically. Do not run those tests again yourself, fix unrelated failures, or bypass hooks with `--no-verify` or environment overrides. If a hook blocks the commit, report its failure and leave the changes intact.
+- On push failure, report the error without force-pushing or changing the destination.
